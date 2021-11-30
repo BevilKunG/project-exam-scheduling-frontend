@@ -1,4 +1,5 @@
 import {DateTime} from 'luxon'
+import {Droppable} from 'react-beautiful-dnd'
 import styles from '../styles/schedule.module.sass'
 import mockData from '../libs/mock-data'
 
@@ -63,19 +64,33 @@ interface ColumnProps {
 }
 
 function Column({date}: ColumnProps) {
-  const {times} = mockData
+  const {times, columns} = mockData
   return (
     <div>
       {times.map((time: string) => (
-        <Row key={`row-${date}-${time}`} />
+        <Row key={`row-${date}-${time}`} column={columns[`column-${date}-${time}`]} />
       ))}
     </div>
   )
 }
 
-function Row() {
+interface RowProps {
+  column: any
+}
+
+function Row({column}: RowProps) {
   return (
-    <div className="h-12 border border-gray-200">
-    </div>
+    <Droppable droppableId={column.id}>
+      {
+        (provided) => (
+          <div 
+            ref={provided.innerRef}
+            {...provided.droppableProps}
+            className="h-12 border border-gray-200">
+            {provided.placeholder}
+          </div>
+        )
+      }
+    </Droppable>
   )
 }

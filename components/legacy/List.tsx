@@ -1,4 +1,4 @@
-import {Droppable, Draggable} from '../libs/dnd-dynamic'
+import {Droppable, Draggable} from '../../libs/dnd-dynamic'
 import styles from '../styles/list.module.sass'
 
 interface ListProps {
