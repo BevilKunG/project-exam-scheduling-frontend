@@ -55,6 +55,8 @@ function generateColumns(dates: string[], times: string[], projects: any) {
     'column-0': {
       id: 'column-0',
       projectIds: Object.keys(projects),
+      date: null,
+      time: null
     },
   }
 
@@ -64,6 +66,8 @@ function generateColumns(dates: string[], times: string[], projects: any) {
       columns[id] = {
         id,
         projectIds: [],
+        date,
+        time
       }
     }
   }

@@ -2,12 +2,17 @@ import {DateTime} from 'luxon'
 import {Droppable} from 'react-beautiful-dnd'
 import styles from '../styles/schedule.module.sass'
 import mockData from '../libs/mock-data'
+import Card from './Card'
 
-function Schedule() {
+interface ScheduleProps {
+  columns: any
+}
+
+function Schedule({columns}: ScheduleProps) {
   return (
     <div className={styles.schedule}>
       <Header />
-      <Body />
+      <Body columns={columns} />
     </div>
   )
 }
@@ -38,7 +43,11 @@ function Header() {
   )
 }
 
-function Body() {
+interface BodyProps {
+  columns: any
+}
+
+function Body({columns}: BodyProps) {
   const {times, dates} = mockData
   return (
     <div className={styles.body}>
@@ -52,7 +61,7 @@ function Body() {
   
       <div className="w-full grid grid-cols-5">
         {dates.map((date: string) => (
-          <Column key={`column-${date}`} date={date} />
+          <Column key={`column-${date}`} {...{date, columns}} />
         ))}
       </div>
     </div>
@@ -61,10 +70,11 @@ function Body() {
 
 interface ColumnProps {
   date: string
+  columns: any
 }
 
-function Column({date}: ColumnProps) {
-  const {times, columns} = mockData
+function Column({date, columns}: ColumnProps) {
+  const {times} = mockData
   return (
     <div>
       {times.map((time: string) => (
@@ -79,6 +89,8 @@ interface RowProps {
 }
 
 function Row({column}: RowProps) {
+  const {projects} = mockData
+  const {projectIds} = column
   return (
     <Droppable droppableId={column.id}>
       {
@@ -88,6 +100,9 @@ function Row({column}: RowProps) {
             {...provided.droppableProps}
             className="h-12 border border-gray-200">
             {provided.placeholder}
+            {projectIds.map((projectId: string, index: number) => (
+              <Card key={projectId} {...{project:projects[projectId], column, index}} />
+            ))}
           </div>
         )
       }

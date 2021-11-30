@@ -1,5 +1,6 @@
 import {FontAwesomeIcon} from '@fortawesome/react-fontawesome'
 import {faShare} from '@fortawesome/free-solid-svg-icons'
+import {useState} from 'react'
 import {DragDropContext, Droppable} from '../../../../libs/dnd-dynamic'
 import mockData from '../../../../libs/mock-data'
 import {
@@ -10,9 +11,39 @@ import {
 import styles from '../../../../styles/SchedulePage.module.sass'
 
 function SchedulePage() {
+  // legacy section
+  const [columns, setColumns] = useState(mockData['columns'])
   const onDragEnd = (result: any) => {
+    const {destination, source, draggableId} = result
 
+    if (!destination) return
+    if (
+      destination.droppableId === source.droppableId &&
+      destination.index === source.index
+    ) return
+
+    const srcCol= columns[source.droppableId]
+    const destCol = columns[destination.droppableId]
+    const srcProjectIds = Array.from(srcCol.projectIds)
+    const destProjectIds = Array.from(destCol.projectIds)
+
+    // if (destProjectIds.length > 0) return
+    srcProjectIds.splice(source.index, 1)
+    destProjectIds.splice(destination.index, 0, draggableId)
+
+    setColumns({
+      ...columns,
+      [srcCol.id]: {
+        ...srcCol,
+        projectIds: srcProjectIds
+      },
+      [destCol.id]: {
+        ...destCol,
+        projectIds: destProjectIds
+      }
+    })
   }
+  //
 
   return (
     <Layout>
@@ -20,7 +51,7 @@ function SchedulePage() {
         <Tabs />
         <DragDropContext onDragEnd={onDragEnd}>
           <div className={styles.container}>
-            <Menu />
+            <Menu column={columns['column-0']} />
 
             <div>
               <div className="flex flex-row justify-between align-center ml-16 mb-4">
@@ -31,7 +62,7 @@ function SchedulePage() {
                 </button>
               </div>
 
-              <Schedule />
+              <Schedule columns={columns} />
             </div>
           </div>
         </DragDropContext>
@@ -52,9 +83,13 @@ function Tabs() {
   )
 }
 
-function Menu() {
-  const {projects, columns} = mockData
-  const {projectIds} = columns['column-0']
+interface MenuProps {
+  column: any
+}
+
+function Menu({column}: MenuProps) {
+  const {projects} = mockData
+  const {projectIds} = column
   return (
     <div>
       <div className={`${styles.menu} w-60 rounded-lg shadow-md pl-4 pr-2 py-2`}>
@@ -69,7 +104,7 @@ function Menu() {
                 className={`${styles.list} overflow-y-scroll grid grid-cols-1 gap-2`}>
                 {provided.placeholder}
                 {projectIds.map((projectId: string, index: number) => (
-                  <Card key={projectIds} {...{project: projects[projectId], index}}  />
+                  <Card key={projectId} {...{project: projects[projectId], column, index}}  />
                 ))}
               </div>
             )
