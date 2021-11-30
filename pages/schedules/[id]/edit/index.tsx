@@ -13,7 +13,19 @@ import styles from '../../../../styles/SchedulePage.module.sass'
 function SchedulePage() {
   // legacy section
   const [columns, setColumns] = useState(mockData['columns'])
+  const [selectedColumnId, selectColumn] = useState<string | null>(null)
+
+  const onDragUpdate = (update: any) => {
+    const {destination} = update
+
+    if (destination) {
+      selectColumn(destination.droppableId)
+    }
+  }
+
   const onDragEnd = (result: any) => {
+    selectColumn(null)
+
     const {destination, source, draggableId} = result
 
     if (!destination) return
@@ -49,7 +61,9 @@ function SchedulePage() {
     <Layout>
       <div className={styles.background}>
         <Tabs />
-        <DragDropContext onDragEnd={onDragEnd}>
+        <DragDropContext 
+          onDragUpdate={onDragUpdate}
+          onDragEnd={onDragEnd}>
           <div className={styles.container}>
             <Menu column={columns['column-0']} />
 
@@ -62,7 +76,7 @@ function SchedulePage() {
                 </button>
               </div>
 
-              <Schedule columns={columns} />
+              <Schedule {...{columns, selectedColumnId}} />
             </div>
           </div>
         </DragDropContext>

@@ -20,7 +20,7 @@ function Card({project, column, index}: CardProps) {
   const status: StatusType = ((project, column) => {
     if(column.id === 'column-0') {
       return StatusType.Unscheduled
-    }
+    }    
     return StatusType.Excellent
   })(project, column)
   
@@ -28,14 +28,15 @@ function Card({project, column, index}: CardProps) {
     <Draggable draggableId={project.id} index={index}>
       {
         (provided) => (
-          <div 
+          <Container 
             {...provided.draggableProps}
             {...provided.dragHandleProps}
             ref={provided.innerRef}
-            className={`${styles.card} relative h-12 rounded-lg py-1 pl-2 pr-4`}>
+            status={status}
+            className={`${styles.card} h-12 rounded-lg py-1 pl-2 pr-4`}>
             <h4 className="text-sm text-white font-medium my-auto">{title}</h4>
             <Status status={status} />
-          </div>
+          </Container>
         )
       }
     </Draggable>
@@ -43,6 +44,20 @@ function Card({project, column, index}: CardProps) {
 }
 
 export default Card
+
+interface ContainerProps {
+  status: StatusType
+}
+
+const Container = styled.div<ContainerProps>`
+  position: relative;
+  user-select: none;
+
+  ${({status}) => {
+    if (status === StatusType.Bad) return 'border: 3px solid #FC6464;'
+    return ''
+  }}
+`
 
 interface StatusProps {
   status: StatusType
