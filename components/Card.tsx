@@ -13,7 +13,7 @@ enum StatusType {
   Excellent = 'EXCELLENT',
   Good = 'GOOD',
   Bad = 'BAD'
-} 
+}
 
 function Card({project, column, index}: CardProps) {
   const title = project.title.replace(/^(.{30}[^\s]*).*/, '$1')

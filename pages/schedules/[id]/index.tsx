@@ -1,14 +1,14 @@
 import {FontAwesomeIcon} from '@fortawesome/react-fontawesome'
 import {faShare} from '@fortawesome/free-solid-svg-icons'
 import {useState} from 'react'
-import {DragDropContext, Droppable} from '../../../../libs/dnd-dynamic'
-import mockData from '../../../../libs/mock-data'
+import {DragDropContext, Droppable} from '../../../libs/dnd-dynamic'
+import mockData from '../../../libs/mock-data'
 import {
   Layout,
   Schedule,
   Card
-} from '../../../../components'
-import styles from '../../../../styles/SchedulePage.module.sass'
+} from '../../../components'
+import styles from '../../../styles/SchedulePage.module.sass'
 
 function SchedulePage() {
   // legacy section
