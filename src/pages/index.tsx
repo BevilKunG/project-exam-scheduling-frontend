@@ -1,6 +1,6 @@
 import {useState} from 'react'
-import {DragDropContext} from '../libs/dnd-dynamic'
-import mockData from '../libs/mock-data'
+import {DragDropContext} from '../utils/dnd-dynamic'
+import mockData from '../utils/mock-data'
 import List from '../components/legacy/List'
 import Table from '../components/legacy/Table'
 

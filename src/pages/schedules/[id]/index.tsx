@@ -1,8 +1,8 @@
 import {FontAwesomeIcon} from '@fortawesome/react-fontawesome'
 import {faShare} from '@fortawesome/free-solid-svg-icons'
 import {useState} from 'react'
-import {DragDropContext, Droppable} from '../../../libs/dnd-dynamic'
-import mockData from '../../../libs/mock-data'
+import {DragDropContext, Droppable} from '../../../utils/dnd-dynamic'
+import mockData from '../../../utils/mock-data'
 import {
   Layout,
   Schedule,

@@ -1,4 +1,4 @@
-import {Draggable} from '../libs/dnd-dynamic'
+import {Draggable} from '../utils/dnd-dynamic'
 import styled from 'styled-components'
 import styles from '../styles/card.module.sass'
 

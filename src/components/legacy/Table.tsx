@@ -1,4 +1,4 @@
-import {Droppable} from '../../libs/dnd-dynamic'
+import {Droppable} from '../../utils/dnd-dynamic'
 import styles from '../styles/table.module.sass'
 import {Card} from './List'
 

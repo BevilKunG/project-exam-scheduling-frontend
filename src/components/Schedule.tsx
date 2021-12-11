@@ -2,7 +2,7 @@ import {DateTime} from 'luxon'
 import {Droppable} from 'react-beautiful-dnd'
 import styled from 'styled-components'
 import styles from '../styles/schedule.module.sass'
-import mockData from '../libs/mock-data'
+import mockData from '../utils/mock-data'
 import Card from './Card'
 
 interface ScheduleProps {
