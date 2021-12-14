@@ -1,6 +1,7 @@
 import {Draggable} from '../utils/dnd-dynamic'
 import styled from 'styled-components'
 import styles from '../styles/card.module.sass'
+import useGlobal from '../hooks/useGlobal'
 
 interface CardProps {
   project: any
@@ -16,6 +17,9 @@ enum StatusType {
 }
 
 function Card({project, column, index}: CardProps) {
+  const {state} = useGlobal()
+  const {isEditMode} = state
+
   const title = project.title.replace(/^(.{30}[^\s]*).*/, '$1')
   const status: StatusType = ((project, column) => {
     if(column.id === 'column-0') {
@@ -24,7 +28,7 @@ function Card({project, column, index}: CardProps) {
     return StatusType.Excellent
   })(project, column)
   
-  return (
+  return isEditMode ? (
     <Draggable draggableId={project.id} index={index}>
       {
         (provided) => (
@@ -40,6 +44,13 @@ function Card({project, column, index}: CardProps) {
         )
       }
     </Draggable>
+  ) : (
+    <Container
+      status={status}
+      className={`${styles.card} h-12 rounded-lg py-1 pl-2 pr-4`}>
+      <h4 className="text-sm text-white font-medium my-auto">{title}</h4>
+      <Status status={status} />
+    </Container>
   )
 }
 

@@ -6,11 +6,14 @@ import mockData from '../../../utils/mock-data'
 import {
   Layout,
   Schedule,
-  Card
+  Card,
+  Navigation,
 } from '../../../components'
 import styles from '../../../styles/SchedulePage.module.sass'
+import useGlobal, { GlobalActionType } from '../../../hooks/useGlobal'
+import {NextPage} from 'next'
 
-function SchedulePage() {
+const SchedulePage: NextPage = () => {
   // legacy section
   const [columns, setColumns] = useState(mockData['columns'])
   const [selectedColumnId, selectColumn] = useState<string | null>(null)
@@ -60,7 +63,7 @@ function SchedulePage() {
   return (
     <Layout>
       <div className={styles.background}>
-        <Tabs />
+        <Navigation />
         <DragDropContext 
           onDragUpdate={onDragUpdate}
           onDragEnd={onDragEnd}>
@@ -88,52 +91,89 @@ function SchedulePage() {
 
 export default SchedulePage
 
-function Tabs() {
+function Menu({column}: any) {
+  const {state} = useGlobal()
+  const {isEditMode} = state
+
   return (
-    <div className="w-full h-12 flex flex-row text-base font-medium">
-      <h3 className="my-auto mr-8">Schedule</h3>
-      <h3 className="my-auto mr-8">Availability</h3>
+    <div>
+      {isEditMode ? (
+        <ProjectMenu {...{column}} />
+      ): (
+        <>
+          <ViewMenu />
+          <SecondaryMenu />
+        </>
+      )}
     </div>
   )
 }
 
-interface MenuProps {
-  column: any
-}
-
-function Menu({column}: MenuProps) {
+function ProjectMenu({column}: any) {
   const {projects} = mockData
   const {projectIds} = column
-  return (
-    <div>
-      <div className={`${styles.menu} w-60 rounded-lg shadow-md pl-4 pr-2 py-2`}>
-        <h2 className="text-lg text-gray-700 font-medium mb-4">Projects</h2>
 
-        <Droppable droppableId="column-0">
-          {
-            (provided) => (
-              <div 
-                ref={provided.innerRef} 
-                {...provided.droppableProps}
-                className={`${styles.list} overflow-y-scroll grid grid-cols-1 gap-2`}>
-                {provided.placeholder}
-                {projectIds.map((projectId: string, index: number) => (
-                  <Card key={projectId} {...{project: projects[projectId], column, index}}  />
-                ))}
-              </div>
-            )
-          }
-        </Droppable>
-      </div>
+  return (
+    <div className={styles.menu}>
+      <h2 className={styles.title}>Projects</h2>
+
+      <Droppable droppableId="column-0">
+        {
+          (provided) => (
+            <div 
+              ref={provided.innerRef} 
+              {...provided.droppableProps}
+              className={`${styles.list} overflow-y-scroll grid grid-cols-1 gap-2`}>
+              {provided.placeholder}
+              {projectIds.map((projectId: string, index: number) => (
+                <Card key={projectId} {...{project: projects[projectId], column, index}}  />
+              ))}
+            </div>
+          )
+        }
+      </Droppable>
+    </div>
+  )
+}
+
+function ViewMenu() {
+  return (
+    <div className={styles.menu}>
+      <h2 className={styles.title}>View</h2>
+    </div>
+  )
+}
+
+function SecondaryMenu() {
+  return (
+    <div className={styles.menu}>
+      <h2 className={styles.title}>Committee</h2>
     </div>
   )
 }
 
 function Bottom() {
+  const {state, dispatch} = useGlobal()
+  const {isEditMode} = state
+  
   return (
     <div className={styles.bottom}>
       <div className="flex flex-row justify-end align-center pt-6">
-        <button className={`${styles.edit} shadow-md`}>Edit</button>
+        {
+          !isEditMode ? (
+            <button 
+              className={`${styles.edit} shadow-md`}
+              onClick={() => dispatch({type: GlobalActionType.EditModeOn})}>
+                Edit
+            </button>
+          ): (
+            <button 
+              className={`${styles.edit} shadow-md`}
+              onClick={() => dispatch({type: GlobalActionType.EditModeOff})}>
+                Cancel
+            </button>
+          )
+        }
       </div>
     </div>
   )

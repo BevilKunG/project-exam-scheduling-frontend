@@ -1,16 +1,46 @@
 import {DateTime} from 'luxon'
+import { useEffect } from 'react'
 import {Droppable} from 'react-beautiful-dnd'
 import styled from 'styled-components'
+import useGlobal from '../hooks/useGlobal'
+import useSchedule, {
+  ScheduleActionType, 
+  ScheduleProvider, 
+  ScheduleType,
+} from '../hooks/useSchedule'
 import styles from '../styles/schedule.module.sass'
 import mockData from '../utils/mock-data'
 import Card from './Card'
 
 interface ScheduleProps {
+  type?: ScheduleType
   columns: any
   selectedColumnId: string | null
 }
 
-function Schedule({columns, selectedColumnId}: ScheduleProps) {
+function Schedule(props: ScheduleProps) {
+  return (
+    <ScheduleProvider>
+      <Content {...props} />
+    </ScheduleProvider>
+  )
+}
+
+export default Schedule
+
+function Content({
+  type=ScheduleType.Schedule,
+  columns,
+  selectedColumnId
+}: ScheduleProps) {
+  const {dispatch} = useSchedule()
+  useEffect(() => {
+    dispatch({
+      type: ScheduleActionType.SetType,
+      payload: {type}
+    })
+  }, [type, dispatch])
+
   return (
     <div className={styles.schedule}>
       <Header selectedColumnId={selectedColumnId} />
@@ -19,19 +49,21 @@ function Schedule({columns, selectedColumnId}: ScheduleProps) {
   )
 }
 
-export default Schedule
-
 interface HeaderProps {
   selectedColumnId: string | null
 }
 
 function Header({selectedColumnId}: HeaderProps) {
+  const {state} = useSchedule()
+
   const {dates, columns} = mockData
   const monthAndYear = DateTime.fromISO(dates[0]).toFormat('LLLL y')
 
   const column = selectedColumnId ? columns[selectedColumnId] : null
   return (
-    <div className={styles.header}>
+    <HeaderContainer
+      scheduleType={state.type}
+      className={styles.header}>
       <div>
         <h3 className="text-white text-base font-medium">{monthAndYear}</h3>
       </div>
@@ -50,10 +82,26 @@ function Header({selectedColumnId}: HeaderProps) {
           )
         })}
       </div>
-    </div>
+    </HeaderContainer>
   )
 }
 
+interface HeaderContainerProps {
+  scheduleType: ScheduleType
+}
+
+const HeaderContainer = styled.div<HeaderContainerProps>`
+  ${({scheduleType}) => {
+    switch (scheduleType) {
+      case ScheduleType.Schedule:
+        return 'background: #53DD6C;'
+      case ScheduleType.Availability:
+        return 'background: #0496FF;'
+    }
+  }}
+`
+
+// legacy
 interface HeaderDateProps {
   active: boolean
 }
@@ -138,9 +186,13 @@ interface RowProps {
 }
 
 function Row({column, selectedColumnId}: RowProps) {
+  const {state} = useGlobal()
+  const {isEditMode} = state
+
   const {projects} = mockData
   const {projectIds} = column
-  return (
+
+  return isEditMode ? (
     <Droppable droppableId={column.id}>
       {
         (provided) => (
@@ -157,6 +209,14 @@ function Row({column, selectedColumnId}: RowProps) {
         )
       }
     </Droppable>
+  ) : (
+    <RowBackground 
+      active={false}
+      className="h-12 border border-gray-200">
+      {projectIds.map((projectId: string, index: number) => (
+        <Card key={projectId} {...{project:projects[projectId], column, index}} />
+      ))}
+    </RowBackground>
   )
 }
 
