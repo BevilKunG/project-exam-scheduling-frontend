@@ -2,6 +2,7 @@ import {Draggable} from '../utils/dnd-dynamic'
 import styled from 'styled-components'
 import styles from '../styles/card.module.sass'
 import useGlobal from '../hooks/useGlobal'
+import useModal, {ModalActionType} from '../hooks/useModal'
 
 interface CardProps {
   project: any
@@ -17,8 +18,10 @@ enum StatusType {
 }
 
 function Card({project, column, index}: CardProps) {
-  const {state} = useGlobal()
-  const {isEditMode} = state
+  const {state: globalState} = useGlobal()
+  const {isEditMode} = globalState
+
+  const {dispatch: dispatchModal} = useModal()
 
   const title = project.title.replace(/^(.{30}[^\s]*).*/, '$1')
   const status: StatusType = ((project, column) => {
@@ -27,6 +30,13 @@ function Card({project, column, index}: CardProps) {
     }    
     return StatusType.Excellent
   })(project, column)
+
+  function openInfo(info: any) {
+    dispatchModal({
+      type: ModalActionType.OpenInfo,
+      payload: {info}
+    })
+  }
   
   return isEditMode ? (
     <Draggable draggableId={project.id} index={index}>
@@ -47,7 +57,9 @@ function Card({project, column, index}: CardProps) {
   ) : (
     <Container
       status={status}
-      className={`${styles.card} h-12 rounded-lg py-1 pl-2 pr-4`}>
+      className={`${styles.card} h-12 rounded-lg py-1 pl-2 pr-4 cursor-pointer`}
+      onClick={() => openInfo(project)}
+      >
       <h4 className="text-sm text-white font-medium my-auto">{title}</h4>
       <Status status={status} />
     </Container>

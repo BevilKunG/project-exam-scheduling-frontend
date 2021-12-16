@@ -1,6 +1,7 @@
 import {NextPage} from 'next'
 import {useState} from 'react'
-import {Layout, Navigation, Schedule} from '../../../components'
+import {Layout, Menu, Navigation, Schedule} from '../../../components'
+import { MenuType } from '../../../components/Menu'
 import {ScheduleType} from '../../../hooks/useSchedule'
 import styles from '../../../styles/AvailabilityPage.module.sass'
 import mockData from '../../../utils/mock-data'
@@ -14,7 +15,7 @@ const AvailabilityPage: NextPage = () => {
         <Navigation />
 
         <div className={styles.container}>
-          <Menu />
+          <Menu type={MenuType.View} />
 
           <div>
             <div className="flex flex-row justify-between align-center ml-16 mb-4">
@@ -37,17 +38,3 @@ const AvailabilityPage: NextPage = () => {
 }
 
 export default AvailabilityPage
-
-function Menu() {
-  return (
-    <div>
-      <div className={styles.menu}>
-        <h2 className={styles.title}>Projects</h2>
-      </div>
-
-      <div className={styles.menu}>
-        <h2 className={styles.title}>Projects</h2>
-      </div>
-    </div>
-  )
-}

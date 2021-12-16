@@ -28,6 +28,12 @@ function ModalPlaceholder() {
 export {ModalPlaceholder}
 
 function InfoModal() {
+  const {state} = useModal()
+  const {info} = state
+
+  if (!info)
+    return null
+
   return (
     <Modal title="Project exam scheduling">
       <div className="flex flex-col justify-around h-full">
@@ -50,7 +56,16 @@ function InfoModal() {
             />
             <div>
               <h3 className="text-base font-semibold text-gray-800">Committee</h3>
-              <h4 className="text-base font-medium text-gray-800">chinawat sanpawat paskorn</h4>
+              <h4 className="text-base font-medium text-gray-800">
+                {/* chinawat sanpawat paskorn */}
+                {info.committees.map((committee: string) => (
+                <span 
+                  style={{marginRight: '0.25rem'}} 
+                  key={committee}>
+                  {committee}
+                </span>
+                ))}
+              </h4>
             </div>
         </div>
 
@@ -63,7 +78,15 @@ function InfoModal() {
             />
             <div>
               <h3 className="text-base font-semibold text-gray-800">Student</h3>
-              <h4 className="text-base font-medium text-gray-800">610610598</h4>
+              <h4 className="text-base font-medium text-gray-800">
+                {info.students.map((student: string) => (
+                <span 
+                  style={{marginRight: '0.25rem'}} 
+                  key={student}>
+                  {student}
+                </span>
+                ))}
+              </h4>
             </div>
         </div>
 

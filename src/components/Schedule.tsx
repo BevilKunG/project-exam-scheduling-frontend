@@ -3,6 +3,7 @@ import { useEffect } from 'react'
 import {Droppable} from 'react-beautiful-dnd'
 import styled from 'styled-components'
 import useGlobal from '../hooks/useGlobal'
+import useMock from '../hooks/useMock'
 import useSchedule, {
   ScheduleActionType, 
   ScheduleProvider, 
@@ -14,8 +15,6 @@ import Card from './Card'
 
 interface ScheduleProps {
   type?: ScheduleType
-  columns: any
-  selectedColumnId: string | null
 }
 
 function Schedule(props: ScheduleProps) {
@@ -28,11 +27,7 @@ function Schedule(props: ScheduleProps) {
 
 export default Schedule
 
-function Content({
-  type=ScheduleType.Schedule,
-  columns,
-  selectedColumnId
-}: ScheduleProps) {
+function Content({type=ScheduleType.Schedule}: ScheduleProps) {
   const {dispatch} = useSchedule()
   useEffect(() => {
     dispatch({
@@ -43,23 +38,18 @@ function Content({
 
   return (
     <div className={styles.schedule}>
-      <Header selectedColumnId={selectedColumnId} />
-      <Body {...{columns, selectedColumnId}} />
+      <Header />
+      <Body />
     </div>
   )
 }
 
-interface HeaderProps {
-  selectedColumnId: string | null
-}
-
-function Header({selectedColumnId}: HeaderProps) {
+function Header() {
   const {state} = useSchedule()
 
-  const {dates, columns} = mockData
+  const {dates} = mockData
   const monthAndYear = DateTime.fromISO(dates[0]).toFormat('LLLL y')
 
-  const column = selectedColumnId ? columns[selectedColumnId] : null
   return (
     <HeaderContainer
       scheduleType={state.type}
@@ -72,13 +62,12 @@ function Header({selectedColumnId}: HeaderProps) {
         {dates.map((date: string) => {
           const dt = DateTime.fromISO(date)
           return (
-            <HeaderDate 
+            <div 
               key={`header-${date}`} 
-              active={column ? column.date === date : false}
               className="text-white text-center font-medium">
               <h3 className="text-lg">{dt.toFormat('d')}</h3>
               <h3 className="text-sm">{dt.toFormat('cccc')}</h3>
-            </HeaderDate>
+            </div>
           )
         })}
       </div>
@@ -101,80 +90,50 @@ const HeaderContainer = styled.div<HeaderContainerProps>`
   }}
 `
 
-// legacy
-interface HeaderDateProps {
-  active: boolean
-}
-
-const HeaderDate = styled.div<HeaderDateProps>`
-  color: ${({active}) => {
-    return active ? '#0496FF' : 'white'
-  }}
-`
-
-interface BodyProps {
-  columns: any
-  selectedColumnId: string | null
-}
-
-function Body({columns, selectedColumnId}: BodyProps) {
+function Body() {
   const {dates} = mockData
   return (
     <div className={styles.body}>
-      <Time selectedColumnId={selectedColumnId} />
+      <Time />
   
       <div className="w-full grid grid-cols-5">
         {dates.map((date: string) => (
-          <Column key={`column-${date}`} {...{date, columns, selectedColumnId}} />
+          <Column key={`column-${date}`} {...{date}} />
         ))}
       </div>
     </div>
   )
 }
 
-interface TimeProps {
-  selectedColumnId: string | null
-}
-
-function Time({selectedColumnId}: TimeProps) {
-  const {times, columns} = mockData
+function Time() {
+  const {times} = mockData
   return (
     <div className="w-16">
       {times.map((time: string) => (
         <div key={`time-${time}`} className="h-12 pt-1">
-          <TimeText 
-            active={selectedColumnId ? columns[selectedColumnId]['time'] === time : false}
+          <h4
             className="text-base font-medium text-gray-800 text-center">
             {time}
-          </TimeText>
+          </h4>
         </div>
       ))}
     </div>
   )
 }
 
-interface TimeTextProps {
-  active: boolean
-}
-
-const TimeText = styled.h4<TimeTextProps>`
-  ${({active}) => {
-    if (active) return 'color: #0496FF'
-  }}
-`
-
 interface ColumnProps {
   date: string
-  columns: any
-  selectedColumnId: string | null
 }
 
-function Column({date, columns, selectedColumnId}: ColumnProps) {
+function Column({date}: ColumnProps) {
+  const {state} = useMock()
+  const {columns} = state
+
   const {times} = mockData
   return (
     <div>
       {times.map((time: string) => (
-        <Row key={`row-${date}-${time}`} {...{column: columns[`column-${date}-${time}`], selectedColumnId}} />
+        <Row key={`row-${date}-${time}`} {...{column: columns[`column-${date}-${time}`]}} />
       ))}
     </div>
   )
@@ -182,10 +141,9 @@ function Column({date, columns, selectedColumnId}: ColumnProps) {
 
 interface RowProps {
   column: any
-  selectedColumnId: string | null
 }
 
-function Row({column, selectedColumnId}: RowProps) {
+function Row({column}: RowProps) {
   const {state} = useGlobal()
   const {isEditMode} = state
 
@@ -196,36 +154,24 @@ function Row({column, selectedColumnId}: RowProps) {
     <Droppable droppableId={column.id}>
       {
         (provided) => (
-          <RowBackground 
+          <div 
             {...provided.droppableProps}
             ref={provided.innerRef}
-            active={selectedColumnId === column.id}
             className="h-12 border border-gray-200">
             {provided.placeholder}
             {projectIds.map((projectId: string, index: number) => (
               <Card key={projectId} {...{project:projects[projectId], column, index}} />
             ))}
-          </RowBackground>
+          </div>
         )
       }
     </Droppable>
   ) : (
-    <RowBackground 
-      active={false}
+    <div 
       className="h-12 border border-gray-200">
       {projectIds.map((projectId: string, index: number) => (
         <Card key={projectId} {...{project:projects[projectId], column, index}} />
       ))}
-    </RowBackground>
+    </div>
   )
 }
-
-interface RowBackgroundProps {
-  active: boolean
-}
-
-const RowBackground = styled.div<RowBackgroundProps>`
-  ${({active}) => {
-    if (active) return 'background: rgba(4, 150, 255, 0.5)'
-  }}
-`

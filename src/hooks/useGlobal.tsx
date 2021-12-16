@@ -9,10 +9,19 @@ import {
 
 type GlobalState = {
   isEditMode: boolean
+  view: ViewType
+}
+
+enum ViewType {
+  All = 'ALL',
+  Committee = 'COMMITTEE',
+  Student = 'STUDENT',
+  Room = 'ROOM'
 }
 
 const initialState: GlobalState = {
-  isEditMode: false
+  isEditMode: false,
+  view: ViewType.All
 }
 
 const useGlobal = () => useContext(GlobalContext)
@@ -20,17 +29,22 @@ const useGlobal = () => useContext(GlobalContext)
 export default useGlobal
 export {
   GlobalProvider,
-  ActionType as GlobalActionType
+  ActionType as GlobalActionType,
+  ViewType,
 }
 
 
 type GlobalAction = {
   type: ActionType
+  payload?: {
+    view: ViewType
+  }
 }
 
 enum ActionType {
   EditModeOn = 'EDIT_MODE_ON',
   EditModeOff = 'EDIT_MODE_OFF',
+  SetView = 'SET_VIEW'
 }
 
 interface GlobalContextValue {
@@ -59,5 +73,10 @@ const reducer: Reducer<GlobalState, GlobalAction> = (state, action) => {
     
     case ActionType.EditModeOff:
       return {...state, isEditMode: false}
+
+    case ActionType.SetView:
+      if (!action.payload)
+        return state
+      return {...state, view: action.payload.view}
   }
 }

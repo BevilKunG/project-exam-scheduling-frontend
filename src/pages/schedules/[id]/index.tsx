@@ -6,29 +6,33 @@ import mockData from '../../../utils/mock-data'
 import {
   Layout,
   Schedule,
-  Card,
   Navigation,
+  Menu,
 } from '../../../components'
 import styles from '../../../styles/SchedulePage.module.sass'
 import useGlobal, { GlobalActionType } from '../../../hooks/useGlobal'
 import {NextPage} from 'next'
+import { MenuType } from '../../../components/Menu'
+import useMock, { MockActionType } from '../../../hooks/useMock'
 
 const SchedulePage: NextPage = () => {
+  const {state: globalState} = useGlobal()
+  const {isEditMode} = globalState
+
   // legacy section
-  const [columns, setColumns] = useState(mockData['columns'])
-  const [selectedColumnId, selectColumn] = useState<string | null>(null)
+  const {state: mockState, dispatch: dispatchMock} = useMock()
+  const {columns} = mockState
 
-  const onDragUpdate = (update: any) => {
-    const {destination} = update
-
-    if (destination) {
-      selectColumn(destination.droppableId)
-    }
+  function setColumns(columns: any) {
+    dispatchMock({
+      type: MockActionType.SetColumns,
+      payload: {
+        columns
+      }
+    })
   }
 
   const onDragEnd = (result: any) => {
-    selectColumn(null)
-
     const {destination, source, draggableId} = result
 
     if (!destination) return
@@ -65,10 +69,9 @@ const SchedulePage: NextPage = () => {
       <div className={styles.background}>
         <Navigation />
         <DragDropContext 
-          onDragUpdate={onDragUpdate}
           onDragEnd={onDragEnd}>
           <div className={styles.container}>
-            <Menu column={columns['column-0']} />
+            <Menu type={isEditMode ? MenuType.Edit : MenuType.View} />
 
             <div>
               <div className="flex flex-row justify-between align-center ml-16 mb-4">
@@ -79,7 +82,7 @@ const SchedulePage: NextPage = () => {
                 </button>
               </div>
 
-              <Schedule {...{columns, selectedColumnId}} />
+              <Schedule />
             </div>
           </div>
         </DragDropContext>
@@ -90,67 +93,6 @@ const SchedulePage: NextPage = () => {
 }
 
 export default SchedulePage
-
-function Menu({column}: any) {
-  const {state} = useGlobal()
-  const {isEditMode} = state
-
-  return (
-    <div>
-      {isEditMode ? (
-        <ProjectMenu {...{column}} />
-      ): (
-        <>
-          <ViewMenu />
-          <SecondaryMenu />
-        </>
-      )}
-    </div>
-  )
-}
-
-function ProjectMenu({column}: any) {
-  const {projects} = mockData
-  const {projectIds} = column
-
-  return (
-    <div className={styles.menu}>
-      <h2 className={styles.title}>Projects</h2>
-
-      <Droppable droppableId="column-0">
-        {
-          (provided) => (
-            <div 
-              ref={provided.innerRef} 
-              {...provided.droppableProps}
-              className={`${styles.list} overflow-y-scroll grid grid-cols-1 gap-2`}>
-              {provided.placeholder}
-              {projectIds.map((projectId: string, index: number) => (
-                <Card key={projectId} {...{project: projects[projectId], column, index}}  />
-              ))}
-            </div>
-          )
-        }
-      </Droppable>
-    </div>
-  )
-}
-
-function ViewMenu() {
-  return (
-    <div className={styles.menu}>
-      <h2 className={styles.title}>View</h2>
-    </div>
-  )
-}
-
-function SecondaryMenu() {
-  return (
-    <div className={styles.menu}>
-      <h2 className={styles.title}>Committee</h2>
-    </div>
-  )
-}
 
 function Bottom() {
   const {state, dispatch} = useGlobal()

@@ -3,6 +3,7 @@ import {createContext, Dispatch, FC, Reducer, useContext, useReducer} from 'reac
 type ModalState = {
   isShow: boolean
   type: ModalType
+  info: any | null
 }
 
 enum ModalType {
@@ -12,7 +13,8 @@ enum ModalType {
 
 const initialState: ModalState = {
   isShow: false,
-  type: ModalType.Info
+  type: ModalType.Info,
+  info: null,
 }
 
 const useModal = () => useContext(ModalContext)
@@ -26,12 +28,17 @@ export {
 
 type ModalAction = {
   type: ActionType
+  payload?: InfoPayload
 }
 
 enum ActionType {
   OpenInfo = 'OPEN_INFO',
   OpenPublish = 'OPEN_PUBLISH',
   Close = 'CLOSE',
+}
+
+type InfoPayload = {
+  info: any
 }
 
 interface ModalContextValue {
@@ -56,10 +63,14 @@ const ModalProvider: FC = ({children}) => {
 const reducer: Reducer<ModalState, ModalAction> = (state, action) => {
   switch (action.type) {
     case ActionType.OpenInfo:
+      if (!action.payload)
+        return state
+
       return {
         ...state, 
         isShow: true,
-        type: ModalType.Info
+        type: ModalType.Info,
+        info: action.payload.info,
       }
     
     case ActionType.OpenPublish:
