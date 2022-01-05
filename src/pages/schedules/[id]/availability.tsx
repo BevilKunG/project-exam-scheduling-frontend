@@ -4,11 +4,8 @@ import {Layout, Menu, Navigation, Schedule} from '../../../components'
 import { MenuType } from '../../../components/Menu'
 import {ScheduleType} from '../../../hooks/useSchedule'
 import styles from '../../../styles/AvailabilityPage.module.sass'
-import mockData from '../../../utils/mock-data'
 
 const AvailabilityPage: NextPage = () => {
-  const [columns] = useState(mockData['columns'])
-
   return (
     <Layout>
       <div className={styles.background}>
@@ -26,9 +23,7 @@ const AvailabilityPage: NextPage = () => {
               </button>
             </div>
 
-            <Schedule 
-              type={ScheduleType.Availability}
-              {...{columns, selectedColumnId: null}} />
+            <Schedule type={ScheduleType.Availability} />
           </div>
         </div>
         <div className={styles.bottom}></div>

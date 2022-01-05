@@ -28,13 +28,16 @@ function Schedule(props: ScheduleProps) {
 export default Schedule
 
 function Content({type=ScheduleType.Schedule}: ScheduleProps) {
-  const {dispatch} = useSchedule()
+  const {state ,dispatch} = useSchedule()
   useEffect(() => {
     dispatch({
       type: ScheduleActionType.SetType,
       payload: {type}
     })
   }, [type, dispatch])
+
+  if (!state.type)
+    return null
 
   return (
     <div className={styles.schedule}>
@@ -55,7 +58,7 @@ function Header() {
       scheduleType={state.type}
       className={styles.header}>
       <div>
-        <h3 className="text-white text-base font-medium">{monthAndYear}</h3>
+        <h3 className={styles.title}>{monthAndYear}</h3>
       </div>
 
       <div className="grid grid-cols-5">
@@ -76,7 +79,7 @@ function Header() {
 }
 
 interface HeaderContainerProps {
-  scheduleType: ScheduleType
+  scheduleType: ScheduleType | null
 }
 
 const HeaderContainer = styled.div<HeaderContainerProps>`
@@ -86,6 +89,9 @@ const HeaderContainer = styled.div<HeaderContainerProps>`
         return 'background: #53DD6C;'
       case ScheduleType.Availability:
         return 'background: #0496FF;'
+      
+      default:
+        return null
     }
   }}
 `
@@ -139,39 +145,73 @@ function Column({date}: ColumnProps) {
   )
 }
 
-interface RowProps {
+function Row(props: any) {
+  const {state} = useSchedule()
+  switch (state.type) {
+    case ScheduleType.Schedule:
+      return <CardRow {...props} />
+    
+    case ScheduleType.Availability:
+      return <StatusRow />
+
+    default:
+      return null
+  }
+}
+
+interface CardRowProps {
   column: any
 }
 
-function Row({column}: RowProps) {
-  const {state} = useGlobal()
-  const {isEditMode} = state
+function CardRow({column}: CardRowProps) {
+  const {state: globalState} = useGlobal()
+  const {isEditMode} = globalState
 
   const {projects} = mockData
   const {projectIds} = column
-
-  return isEditMode ? (
+  
+  return !isEditMode ? (
+    <CardRowContainer
+      cards={projectIds.length} 
+      className={`${styles.row} ${styles.card}`}>
+      {projectIds.map((projectId: string, index: number) => (
+        <Card 
+          key={projectId}
+          draggable={false}
+          {...{project:projects[projectId], column, index}} />
+      ))}
+    </CardRowContainer>
+  ) : (
     <Droppable droppableId={column.id}>
       {
         (provided) => (
-          <div 
+          <CardRowContainer
+            cards={projectIds.length} 
             {...provided.droppableProps}
             ref={provided.innerRef}
-            className="h-12 border border-gray-200">
+            className={`${styles.row} ${styles.card}`}>
             {provided.placeholder}
             {projectIds.map((projectId: string, index: number) => (
               <Card key={projectId} {...{project:projects[projectId], column, index}} />
             ))}
-          </div>
+          </CardRowContainer>
         )
       }
     </Droppable>
-  ) : (
-    <div 
-      className="h-12 border border-gray-200">
-      {projectIds.map((projectId: string, index: number) => (
-        <Card key={projectId} {...{project:projects[projectId], column, index}} />
-      ))}
+  )
+}
+
+interface CardRowContainerProps {
+  cards: number
+}
+
+const CardRowContainer = styled.div<CardRowContainerProps>`
+  grid-template-columns: repeat(${({cards}) => cards}, minmax(0, 1fr));
+`
+
+function StatusRow() {
+  return (
+    <div className={styles.row}>
     </div>
   )
 }

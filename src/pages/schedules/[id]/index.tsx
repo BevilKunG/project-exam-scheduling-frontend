@@ -1,8 +1,6 @@
 import {FontAwesomeIcon} from '@fortawesome/react-fontawesome'
 import {faShare} from '@fortawesome/free-solid-svg-icons'
-import {useState} from 'react'
 import {DragDropContext, Droppable} from '../../../utils/dnd-dynamic'
-import mockData from '../../../utils/mock-data'
 import {
   Layout,
   Schedule,
@@ -68,10 +66,9 @@ const SchedulePage: NextPage = () => {
     <Layout>
       <div className={styles.background}>
         <Navigation />
-        <DragDropContext 
-          onDragEnd={onDragEnd}>
+        <DragDropContext onDragEnd={onDragEnd}>
           <div className={styles.container}>
-            <Menu type={isEditMode ? MenuType.Edit : MenuType.View} />
+            <Menu type={isEditMode ? MenuType.Project : MenuType.View} />
 
             <div>
               <div className="flex flex-row justify-between align-center ml-16 mb-4">

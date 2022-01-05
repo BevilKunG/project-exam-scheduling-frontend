@@ -5,6 +5,7 @@ import {Droppable} from '../utils/dnd-dynamic'
 import Card from './Card'
 import styled from 'styled-components'
 import useMock from '../hooks/useMock'
+import committees from '../utils/mock-data/committees'
 
 interface MenuProps {
   type: MenuType
@@ -14,17 +15,17 @@ function Menu({type}: MenuProps) {
   switch (type) {
     case MenuType.View:
       return (
-        <div>
+        <div className={styles.container}>
           <ViewMenu />
           <SecondaryMenu />
         </div>
       )
 
-    case MenuType.Edit:
+    case MenuType.Project:
       return (
-        <div>
+        <div className={styles.container}>
           <ProjectMenu />
-        </div> 
+        </div>
       )
   }
 }
@@ -33,40 +34,12 @@ export default Menu
 export {MenuType}
 
 enum MenuType {
-  Edit = 'EDIT',
   View = 'VIEW',
+  Project = 'Project',
 }
 
-function ProjectMenu() {
-  const {state} = useMock()
-  const {columns} = state
-
-  const column = columns['column-0']
-  const {projectIds} = column
-  
-  const {projects} = mockData
-
-  return (
-    <div className={`${styles.project} ${styles.menu}`}>
-      <h2 className={styles.title}>Projects</h2>
-
-      <Droppable droppableId="column-0">
-        {
-          (provided) => (
-            <div 
-              ref={provided.innerRef} 
-              {...provided.droppableProps}
-              className={`${styles.list} overflow-y-scroll grid grid-cols-1 gap-2`}>
-              {provided.placeholder}
-              {projectIds.map((projectId: string, index: number) => (
-                <Card key={projectId} {...{project: projects[projectId], column, index}}  />
-              ))}
-            </div>
-          )
-        }
-      </Droppable>
-    </div>
-  )
+interface ContainerProps {
+  type: MenuType
 }
 
 function ViewMenu() {
@@ -137,8 +110,19 @@ function SecondaryMenu() {
   })(view)
   
   return (
-    <div className={styles.menu}>
+    <div className={`${styles.secondary} ${styles.menu}`}>
       <h2 className={styles.title}>{title}</h2>
+
+      <div className={styles.list}>
+        {committees.map((committee) => (
+          <MenuItem 
+            active={false} 
+            key={committee}
+            className={styles.item}>
+            {committee}
+          </MenuItem>
+        ))}
+      </div>
     </div>
   )
 }
@@ -153,3 +137,35 @@ const MenuItem = styled.button<MenuItemProps>`
     color: white;
   `}
 `
+
+function ProjectMenu() {
+  const {state} = useMock()
+  const {columns} = state
+
+  const column = columns['column-0']
+  const {projectIds} = column
+  
+  const {projects} = mockData
+
+  return (
+    <div className={`${styles.project} ${styles.menu}`}>
+      <h2 className={styles.title}>Projects</h2>
+
+      <Droppable droppableId="column-0">
+        {
+          (provided) => (
+            <div 
+              ref={provided.innerRef} 
+              {...provided.droppableProps}
+              className={styles.list}>
+              {provided.placeholder}
+              {projectIds.map((projectId: string, index: number) => (
+                <Card key={projectId} {...{project: projects[projectId], column, index}}  />
+              ))}
+            </div>
+          )
+        }
+      </Droppable>
+    </div>
+  )
+}

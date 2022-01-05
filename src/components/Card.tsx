@@ -8,6 +8,7 @@ interface CardProps {
   project: any
   column: any
   index: number
+  draggable?: boolean
 }
 
 enum StatusType {
@@ -17,10 +18,12 @@ enum StatusType {
   Bad = 'BAD'
 }
 
-function Card({project, column, index}: CardProps) {
-  const {state: globalState} = useGlobal()
-  const {isEditMode} = globalState
-
+function Card({
+  project, 
+  column, 
+  index,
+  draggable=true,
+}: CardProps) {
   const {dispatch: dispatchModal} = useModal()
 
   const title = project.title.replace(/^(.{30}[^\s]*).*/, '$1')
@@ -38,7 +41,7 @@ function Card({project, column, index}: CardProps) {
     })
   }
   
-  return isEditMode ? (
+  return draggable ? (
     <Draggable draggableId={project.id} index={index}>
       {
         (provided) => (
@@ -47,8 +50,8 @@ function Card({project, column, index}: CardProps) {
             {...provided.dragHandleProps}
             ref={provided.innerRef}
             status={status}
-            className={`${styles.card} h-12 rounded-lg py-1 pl-2 pr-4`}>
-            <h4 className="text-sm text-white font-medium my-auto">{title}</h4>
+            className={styles.card}>
+            <h4 className={styles.title}>{title}</h4>
             <Status status={status} />
           </Container>
         )
@@ -57,10 +60,10 @@ function Card({project, column, index}: CardProps) {
   ) : (
     <Container
       status={status}
-      className={`${styles.card} h-12 rounded-lg py-1 pl-2 pr-4 cursor-pointer`}
+      className={styles.card}
       onClick={() => openInfo(project)}
       >
-      <h4 className="text-sm text-white font-medium my-auto">{title}</h4>
+      <h4 className={styles.title}>{title}</h4>
       <Status status={status} />
     </Container>
   )
@@ -73,9 +76,6 @@ interface ContainerProps {
 }
 
 const Container = styled.div<ContainerProps>`
-  position: relative;
-  user-select: none;
-
   ${({status}) => {
     if (status === StatusType.Bad) return 'border: 3px solid #FC6464;'
     return ''

@@ -8,7 +8,7 @@ import {
 } from 'react'
 
 type ScheduleState = {
-  type: ScheduleType
+  type: ScheduleType | null
 }
 
 enum ScheduleType {
@@ -17,7 +17,7 @@ enum ScheduleType {
 }
 
 const initialState: ScheduleState = {
-  type: ScheduleType.Schedule,
+  type: null,
 }
 
 const useSchedule = () => useContext(ScheduleContext)
