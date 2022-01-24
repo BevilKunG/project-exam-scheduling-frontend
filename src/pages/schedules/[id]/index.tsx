@@ -106,11 +106,19 @@ function Bottom() {
                 Edit
             </button>
           ): (
-            <button 
-              className={`${styles.edit} shadow-md`}
-              onClick={() => dispatch({type: GlobalActionType.EditModeOff})}>
-                Cancel
-            </button>
+            <>
+              <button 
+                className={`${styles.cancel} mr-10`}
+                onClick={() => dispatch({type: GlobalActionType.EditModeOff})}>
+                  Cancel
+              </button>
+
+              <button 
+                className={`${styles.save} shadow-md`}
+                onClick={() => dispatch({type: GlobalActionType.EditModeOff})}>
+                  Save
+              </button>
+            </>
           )
         }
       </div>

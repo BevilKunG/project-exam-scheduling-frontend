@@ -114,14 +114,14 @@ function SecondaryMenu() {
       <h2 className={styles.title}>{title}</h2>
 
       <div className={styles.list}>
-        {committees.map((committee) => (
+        {/* {committees.map((committee) => (
           <MenuItem 
             active={false} 
             key={committee}
             className={styles.item}>
             {committee}
           </MenuItem>
-        ))}
+        ))} */}
       </div>
     </div>
   )
