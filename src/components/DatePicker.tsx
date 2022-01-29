@@ -71,71 +71,109 @@ function WeekDay() {
 function Day() {
   const {state, dispatch} = useDatePicker()
   const days = [
-    ...calculateBlankDays(state.current),
+    ...calculatePrevMonthDays(state.current),
     ...calculateDays(state.current),
+    ...calculateNextMonthDays(state.current),
   ]
 
-  function calculateBlankDays(iso: string) {
+  function calculatePrevMonthDays(iso: string) {
     const firstWeekDay = DateTime.fromISO(iso).startOf('month').weekday % 7
+    const prevMonth = DateTime.fromISO(iso).minus({months: 1})
+    const finalDateOfPrevMonth = DateTime.fromISO(`${prevMonth.toFormat('yyyy-MM')}-${prevMonth.daysInMonth}`)
+    const days = Array.from(Array(firstWeekDay).keys()).map((i) => {
+      const date = finalDateOfPrevMonth.minus({day: i}).toISODate()
+      return {
+        key: `prev-${date}`,
+        active: state.dates.includes(date),
+        disabled: true,
+        onClick: undefined,
+        day: DateTime.fromISO(date).toFormat('d'),
+      }
+    }).reverse()
 
-    const blanks = []
-    for (let i = 0; i < firstWeekDay; i++) 
-      blanks.push(<div key={`blank-${i}`} />)
-
-    return blanks
+    return days
   }
 
   function calculateDays(iso: string) {
     const daysInMonth = DateTime.fromISO(iso).daysInMonth
+    const days = Array.from(Array(daysInMonth).keys())
+      .map((i) => i+1)
+      .map((d) => {
+        const date = DateTime.fromISO(iso).set({day: d}).toISODate()
+        const isPicked = state.dates.includes(date)
+        return {
+          key: `day-button-${date}`,
+          active: isPicked,
+          disabled: false,
+          onClick: () => {
+            const type = isPicked ? DatePickerActionType.Unpick : DatePickerActionType.Pick
+            dispatch({
+              type,
+              payload: {
+                date
+              }
+            })
+          },
+          day: d,
+        }
+      })
 
-    const days = []
-    for (let i = 1; i <= daysInMonth; i++) {
-      const date = `${state.current}-${i < 10 ? '0' : ''}${i}`
-      const isPicked = state.dates.includes(date)
-      const onDayButtonClick = () => {
-        const type = isPicked ? DatePickerActionType.Unpick : DatePickerActionType.Pick
-        dispatch({
-          type,
-          payload: {
-            date
-          }
-        })
+    return days
+  }
+
+  function calculateNextMonthDays(iso: string) {
+    const firstWeekDay = DateTime.fromISO(iso).startOf('month').weekday % 7
+    const daysInMonth = DateTime.fromISO(iso).daysInMonth
+    const firstDateOfNextMonth = DateTime.fromISO(iso).plus({months: 1}).set({day: 1})
+    const days = Array.from(Array(42 - firstWeekDay - daysInMonth).keys()).map((i) => {
+      const date = firstDateOfNextMonth.plus({day: i}).toISODate()
+      return {
+        key: `next-${date}`,
+        active: state.dates.includes(date),
+        disabled: true,
+        onClick: undefined,
+        day: DateTime.fromISO(date).toFormat('d'),
       }
-
-      days.push(
-        <div
-          key={`day-button-${date}`}
-          className="mx-auto">
-          <DayButton
-            isPicked={isPicked}
-            onClick={onDayButtonClick}
-            className="w-8 h-8 text-base font-medium text-gray-700 cursor-pointer">
-            {i}
-          </DayButton>
-        </div>
-      )
-    }
+    })
 
     return days
   }
 
   return (
-    <div className="grid grid-cols-7 gap-y-2">
-      {days}
+    <div className="grid grid-cols-7 gap-y-1">
+      {days.map(({key, day, ...dayButtonProp}) => (
+        <DayButton
+          key={key}
+          {...dayButtonProp}
+          className="w-8 h-8 text-base font-medium text-gray-200 mx-auto">
+          {day}
+        </DayButton>
+      ))}
     </div>
   )
 }
 
 interface DayButtonProps {
-  isPicked: boolean
+  active?: boolean
+  disabled?: boolean
 }
 
 const DayButton = styled.button<DayButtonProps>`
-  ${({isPicked}) => isPicked && `
-    background: #53DD6C;
-    color: white;
-    border-radius: 9999px;
-  `}
+  ${({active, disabled}) => {
+    if (active) {
+      return disabled ? `
+        background: rgb(229 231 235);
+        color: white;
+        border-radius: 9999px;
+      ` : `
+        background: #53DD6C;
+        color: white;
+        border-radius: 9999px;
+      `
+    } else {
+      return disabled ? 'color: rgb(229 231 235);' : 'color: rgb(55 65 81);'
+    }
+  }}
 `
 
 function ResetButton() {

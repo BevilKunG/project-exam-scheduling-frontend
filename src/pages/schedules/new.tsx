@@ -1,6 +1,7 @@
 import {FontAwesomeIcon} from '@fortawesome/react-fontawesome'
 import {faDownload} from '@fortawesome/free-solid-svg-icons'
 import {NextPage} from 'next'
+import Image from 'next/image'
 import {DatePicker, Layout} from '../../components'
 import useForm, {FormActionType, FormProvider, FormStep} from '../../hooks/useForm'
 import styles from '../../styles/ScheduleFormPage.module.sass'
@@ -38,15 +39,24 @@ function FirstForm() {
     <div className={styles.form}>
       <div className="my-8">
         <label className="block text-lg font-semibold text-gray-700">Semester</label>
-        <div className="mt-2">
+        <div className="flex mt-2">
           <input 
             type="text" 
-            className="w-16 px-4 py-1 text-lg border border-gray-400 rounded mr-16"
+            className="w-16 h-10 px-4 py-1 text-lg border border-gray-400 rounded"
             maxLength={1}
             />
+
+            <div className="mx-2">
+              <Image 
+                src="/diagonal-line.svg"
+                alt=""
+                width={40}
+                height={40} />
+            </div>
+
           <input 
             type="text" 
-            className="w-24 px-4 py-1 text-lg border border-gray-400 rounded"
+            className="w-24 h-10 px-4 py-1 text-lg border border-gray-400 rounded"
             maxLength={4}
             />
         </div>
@@ -55,7 +65,7 @@ function FirstForm() {
       <div className="my-8">
         <label className="block text-lg font-semibold text-gray-700">Type</label>
         <div className="mt-2">
-          <select className="w-64 px-4 py-1 text-lg border border-gray-400 rounded">
+          <select className="w-64 h-10 px-4 py-1 text-lg border border-gray-400 rounded">
             <option value="MIDTERM">Midterm</option>
             <option value="FINAL">Final</option>
           </select>
