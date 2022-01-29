@@ -48,7 +48,7 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
             ["autoprefixer", "virtual:fb898ce7ef5bcfd217c7d7dca524304ef9b62398b791703ff5fa816f99be43318cb296ba2b6849088e316bb53ae5f832d84766f4377d8b1ced9afdc5b7be9040#npm:10.4.0"],
             ["eslint", "npm:7.32.0"],
             ["eslint-config-next", "virtual:fb898ce7ef5bcfd217c7d7dca524304ef9b62398b791703ff5fa816f99be43318cb296ba2b6849088e316bb53ae5f832d84766f4377d8b1ced9afdc5b7be9040#npm:12.0.4"],
-            ["luxon", "npm:2.2.0"],
+            ["luxon", "npm:2.3.0"],
             ["next", "virtual:fb898ce7ef5bcfd217c7d7dca524304ef9b62398b791703ff5fa816f99be43318cb296ba2b6849088e316bb53ae5f832d84766f4377d8b1ced9afdc5b7be9040#npm:12.0.4"],
             ["postcss", "npm:8.4.4"],
             ["prettier", "npm:2.5.0"],
@@ -4032,10 +4032,10 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
         }]
       ]],
       ["luxon", [
-        ["npm:2.2.0", {
-          "packageLocation": "./.yarn/cache/luxon-npm-2.2.0-627681c18e-69c715529b.zip/node_modules/luxon/",
+        ["npm:2.3.0", {
+          "packageLocation": "./.yarn/cache/luxon-npm-2.3.0-00b9e7e740-3d00e1b812.zip/node_modules/luxon/",
           "packageDependencies": [
-            ["luxon", "npm:2.2.0"]
+            ["luxon", "npm:2.3.0"]
           ],
           "linkType": "HARD",
         }]
@@ -5031,7 +5031,7 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
             ["autoprefixer", "virtual:fb898ce7ef5bcfd217c7d7dca524304ef9b62398b791703ff5fa816f99be43318cb296ba2b6849088e316bb53ae5f832d84766f4377d8b1ced9afdc5b7be9040#npm:10.4.0"],
             ["eslint", "npm:7.32.0"],
             ["eslint-config-next", "virtual:fb898ce7ef5bcfd217c7d7dca524304ef9b62398b791703ff5fa816f99be43318cb296ba2b6849088e316bb53ae5f832d84766f4377d8b1ced9afdc5b7be9040#npm:12.0.4"],
-            ["luxon", "npm:2.2.0"],
+            ["luxon", "npm:2.3.0"],
             ["next", "virtual:fb898ce7ef5bcfd217c7d7dca524304ef9b62398b791703ff5fa816f99be43318cb296ba2b6849088e316bb53ae5f832d84766f4377d8b1ced9afdc5b7be9040#npm:12.0.4"],
             ["postcss", "npm:8.4.4"],
             ["prettier", "npm:2.5.0"],

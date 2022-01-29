@@ -1,7 +1,7 @@
 import {FontAwesomeIcon} from '@fortawesome/react-fontawesome'
 import {faDownload} from '@fortawesome/free-solid-svg-icons'
 import {NextPage} from 'next'
-import {Layout} from '../../components'
+import {DatePicker, Layout} from '../../components'
 import useForm, {FormActionType, FormProvider, FormStep} from '../../hooks/useForm'
 import styles from '../../styles/ScheduleFormPage.module.sass'
 
@@ -60,15 +60,22 @@ function FirstForm() {
             <option value="FINAL">Final</option>
           </select>
         </div>
+
+        <div className="my-8">
+          <label className="block text-lg font-semibold text-gray-700"> Duration</label>
+          <div className="mt-2">
+            <DatePicker />
+          </div>
+        </div>
       </div>
 
-      {/* <div className={styles.buttons}>
+      <div className={styles.buttons}>
         <button 
           className={`${styles.next} w-16 h-8 rounded`}
           onClick={() => dispatch({type: FormActionType.Next})}>
             <span className="text-lg font-semibold">Next</span>
         </button>
-      </div> */}
+      </div>
     </div>
   )
 }
