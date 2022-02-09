@@ -28,10 +28,13 @@ export {
 
 type DatePickerAction = {
   type: ActionType,
-  payload?: {
-    date: string
-  }
+  payload?: ActionPayload
 }
+
+type ActionPayload = Partial<{
+  date: string
+  dates: string[]
+}>
 
 enum ActionType {
   Next = 'NEXT',
@@ -39,6 +42,7 @@ enum ActionType {
   Pick = 'PICK',
   Unpick = 'UNPICK',
   Reset = 'RESET',
+  Set = 'SET',
 }
 
 interface DatePickerContextValue {
@@ -72,16 +76,25 @@ const reducer: Reducer<DatePickerState, DatePickerAction> = (state, action) => {
       return {...state, current}
     }
 
-    case ActionType.Pick: {
-      if (!action.payload) 
+    case ActionType.Set: {
+      if(action.payload?.dates === undefined)
         return state
 
-      const dates = [...state.dates, action.payload.date]
+      const dates = [...action.payload.dates].sort((a, b) => (+DateTime.fromISO(a)) - (+DateTime.fromISO(b)))
+      const current = dates.length > 0 ? DateTime.fromISO(dates[0]).toFormat('yyyy-MM') : initialState.current
+      return {...state, dates, current}
+    }
+
+    case ActionType.Pick: {
+      if (action.payload?.date === undefined) 
+        return state
+
+      const dates = [...state.dates, action.payload.date].sort((a, b) => (+DateTime.fromISO(a)) - (+DateTime.fromISO(b)))
       return {...state, dates}
     }
 
     case ActionType.Unpick: {
-      if (!action.payload) 
+      if (action.payload?.date === undefined) 
         return state
 
       const dates = state.dates.filter((date) => (date !== action.payload?.date))

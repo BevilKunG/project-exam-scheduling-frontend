@@ -4,6 +4,8 @@ import useDatePicker, {DatePickerActionType, DatePickerProvider} from '../hooks/
 import {faChevronLeft, faChevronRight} from '@fortawesome/free-solid-svg-icons'
 import styled from 'styled-components'
 import styles from '../styles/datepicker.module.sass'
+import useForm, { FormActionType } from '../hooks/useForm'
+import { useEffect } from 'react'
 
 function DatePicker() {
   return (
@@ -21,14 +23,23 @@ function DatePicker() {
 export default DatePicker
 
 function Header() {
-  const {state, dispatch} = useDatePicker()
-  const title = DateTime.fromISO(state.current).toFormat('MMM yyyy')
+  const {state: datePickerState, dispatch: dispatchDatePicker} = useDatePicker()
+  const title = DateTime.fromISO(datePickerState.current).toFormat('MMM yyyy')
+
+  const {state: formState} = useForm()
+  useEffect(() => {
+    if (datePickerState.dates.length === 0 && formState.dates.length !== 0) {
+      dispatchDatePicker({type: DatePickerActionType.Set, payload: {dates: formState.dates}})
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps 
+  }, [])
+
   return (
     <div className="flex flex-row justify-between align-center mb-2">
       <h1 className="text-xl font-medium text-gray-700">{title}</h1>
       <div>
         <button 
-          onClick={() => dispatch({type: DatePickerActionType.Prev})}
+          onClick={() => dispatchDatePicker({type: DatePickerActionType.Prev})}
           className="mr-8 outline-none">
           <FontAwesomeIcon 
             icon={faChevronLeft}
@@ -37,7 +48,7 @@ function Header() {
         </button>
 
         <button 
-          onClick={() => dispatch({type: DatePickerActionType.Next})}
+          onClick={() => dispatchDatePicker({type: DatePickerActionType.Next})}
           className="outline-none">
           <FontAwesomeIcon 
           icon={faChevronRight} 
@@ -69,11 +80,11 @@ function WeekDay() {
 }
 
 function Day() {
-  const {state, dispatch} = useDatePicker()
+  const {state: datePickerState, dispatch: dispatchDatePicker} = useDatePicker()
   const days = [
-    ...calculatePrevMonthDays(state.current),
-    ...calculateDays(state.current),
-    ...calculateNextMonthDays(state.current),
+    ...calculatePrevMonthDays(datePickerState.current),
+    ...calculateDays(datePickerState.current),
+    ...calculateNextMonthDays(datePickerState.current),
   ]
 
   function calculatePrevMonthDays(iso: string) {
@@ -84,10 +95,10 @@ function Day() {
       const date = finalDateOfPrevMonth.minus({day: i}).toISODate()
       return {
         key: `prev-${date}`,
-        active: state.dates.includes(date),
-        disabled: true,
-        onClick: undefined,
+        active: datePickerState.dates.includes(date),
+        isCurrent: false,
         day: DateTime.fromISO(date).toFormat('d'),
+        onClick: () => onDayButtonClick(date),
       }
     }).reverse()
 
@@ -100,21 +111,12 @@ function Day() {
       .map((i) => i+1)
       .map((d) => {
         const date = DateTime.fromISO(iso).set({day: d}).toISODate()
-        const isPicked = state.dates.includes(date)
         return {
           key: `day-button-${date}`,
-          active: isPicked,
-          disabled: false,
-          onClick: () => {
-            const type = isPicked ? DatePickerActionType.Unpick : DatePickerActionType.Pick
-            dispatch({
-              type,
-              payload: {
-                date
-              }
-            })
-          },
+          active: datePickerState.dates.includes(date),
+          isCurrent: true,
           day: d,
+          onClick: () => onDayButtonClick(date),
         }
       })
 
@@ -129,14 +131,30 @@ function Day() {
       const date = firstDateOfNextMonth.plus({day: i}).toISODate()
       return {
         key: `next-${date}`,
-        active: state.dates.includes(date),
-        disabled: true,
-        onClick: undefined,
+        active: datePickerState.dates.includes(date),
+        isCurrent: false,
         day: DateTime.fromISO(date).toFormat('d'),
+        onClick: () => onDayButtonClick(date),
       }
     })
 
     return days
+  }
+
+  const {dispatch: dispatchForm} = useForm()
+  function onDayButtonClick(date: string) {
+    const isPicked = datePickerState.dates.includes(date)
+    const type = isPicked ? DatePickerActionType.Unpick : DatePickerActionType.Pick
+    dispatchDatePicker({
+      type,
+      payload: {
+        date
+      }
+    })
+
+    const dates = isPicked ? datePickerState.dates.filter((d) => d !== date) : 
+      [...datePickerState.dates, date].sort((a, b) => (+DateTime.fromISO(a)) - (+DateTime.fromISO(b)))
+    dispatchForm({type: FormActionType.SetDates, payload: {dates}})
   }
 
   return (
@@ -155,33 +173,32 @@ function Day() {
 
 interface DayButtonProps {
   active?: boolean
-  disabled?: boolean
+  isCurrent?: boolean
 }
 
 const DayButton = styled.button<DayButtonProps>`
-  ${({active, disabled}) => {
-    if (active) {
-      return disabled ? `
-        background: rgb(229 231 235);
-        color: white;
-        border-radius: 9999px;
-      ` : `
-        background: #53DD6C;
-        color: white;
-        border-radius: 9999px;
-      `
-    } else {
-      return disabled ? 'color: rgb(229 231 235);' : 'color: rgb(55 65 81);'
-    }
+  ${({active, isCurrent}) => {
+    return active ? `
+    background: #53DD6C;
+    color: white;
+    border-radius: 9999px;
+  ` : (isCurrent ? `color: rgb(55 65 81);` : `color: rgb(229 231 235);`)
   }}
 `
 
 function ResetButton() {
-  const {dispatch} = useDatePicker()
+  const {dispatch: dispatchForm} = useForm()
+  const {dispatch: dispatchDatePicker} = useDatePicker()
+
+  const onResetClick = () => {
+    dispatchDatePicker({type: DatePickerActionType.Reset})
+    dispatchForm({type: FormActionType.SetDates, payload: {dates: []}})
+  }
+
   return (
     <div className="absolute bottom-2 right-4">
       <button 
-        onClick={() => dispatch({type: DatePickerActionType.Reset})}
+        onClick={onResetClick}
         className={styles.reset}>
         <span className="text-base font-medium">Reset</span>
       </button>

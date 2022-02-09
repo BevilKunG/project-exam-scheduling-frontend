@@ -12,12 +12,39 @@ enum FormStep {
   Second = 'SECOND'
 }
 
+enum FormFileName {
+  ProjectInfo = 'projectInfo',
+  Rooms = 'rooms',
+  Enrollment = 'enrollment',
+  CourseSchedule = 'courseSchedule',
+}
+
 type FormState = {
   step: FormStep
+  term: string
+  academicYear: string
+  type: string // scheduleFor
+  dates: string[]
+  file: {
+    projectInfo: File | null
+    rooms: File | null
+    enrollment: File | null
+    courseSchedule: File | null
+  }
 }
 
 const initialState: FormState = {
-  step: FormStep.First
+  step: FormStep.First,
+  term: '',
+  academicYear: '',
+  type: 'MIDTERM',
+  dates: [],
+  file: {
+    projectInfo: null,
+    rooms: null,
+    enrollment: null,
+    courseSchedule: null,
+  },
 }
 
 const useForm = () => useContext(FormContext)
@@ -27,17 +54,35 @@ export {
   FormProvider,
   ActionType as FormActionType,
   FormStep,
+  FormFileName,
 }
 
 type FormAction = {
   type: ActionType
-  payload?: {
-  }
+  payload?: ActionPayload
 }
+
+type ActionPayload = Partial<{
+  term: string
+  academicYear: string
+  type: any
+  dates: string[]
+  file: Partial<{
+    projectInfo: File
+    rooms: File
+    enrollment: File
+    courseSchedule: File
+  }>
+}>
 
 enum ActionType {
   Next = 'Next',
-  Back = 'Back'
+  Back = 'Back',
+  SetTerm = 'SET_TERM',
+  SetAcademicYear = 'SET_ACADEMIC_YEAR',
+  SetType = 'SET_TYPE',
+  SetDates = 'SET_DATES',
+  SetFile = 'SET_FILE',
 }
 
 interface FormContextValue {
@@ -66,6 +111,50 @@ const reducer: Reducer<FormState, FormAction> = (state, action) => {
 
     case ActionType.Back:
       return {...state, step: FormStep.First}
+
+    case ActionType.SetTerm: {
+      if (action.payload?.term === undefined) {
+        return state
+      }
+
+      return {...state, term: action.payload.term}
+    }
+
+    case ActionType.SetAcademicYear: {
+      if (action.payload?.academicYear === undefined) {
+        return state
+      }
+
+      return {...state, academicYear: action.payload.academicYear}
+    }
+        
+
+    case ActionType.SetType: {
+      if (action.payload?.type === undefined) {
+        return state
+      }
+
+      return {...state, type: action.payload.type}
+    }
+
+    case ActionType.SetDates: {
+      if (action.payload?.dates === undefined) {
+        return state
+      }
+
+      return {...state, dates: action.payload.dates}
+    }
+
+    case ActionType.SetFile: {
+      return {
+        ...state,
+        file: {
+          ...state.file,
+          ...action.payload,
+        }
+      }
+    }
+      
 
     default:
       return state
