@@ -37,12 +37,11 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
           "packageDependencies": [
             ["@apollo/client", "virtual:fb898ce7ef5bcfd217c7d7dca524304ef9b62398b791703ff5fa816f99be43318cb296ba2b6849088e316bb53ae5f832d84766f4377d8b1ced9afdc5b7be9040#npm:3.5.8"],
             ["@fortawesome/fontawesome-svg-core", "npm:1.3.0"],
-            ["@fortawesome/free-brands-svg-icons", "npm:5.15.4"],
-            ["@fortawesome/free-regular-svg-icons", "npm:5.15.4"],
             ["@fortawesome/free-solid-svg-icons", "npm:5.15.4"],
             ["@fortawesome/react-fontawesome", "virtual:fb898ce7ef5bcfd217c7d7dca524304ef9b62398b791703ff5fa816f99be43318cb296ba2b6849088e316bb53ae5f832d84766f4377d8b1ced9afdc5b7be9040#npm:0.1.17"],
             ["@types/luxon", "npm:2.0.9"],
             ["@types/node", "npm:16.11.9"],
+            ["@types/papaparse", "npm:5.3.2"],
             ["@types/react", "npm:17.0.36"],
             ["@types/react-beautiful-dnd", "npm:13.1.2"],
             ["@types/styled-components", "npm:5.1.22"],
@@ -52,6 +51,7 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
             ["graphql", "npm:16.3.0"],
             ["luxon", "npm:2.3.0"],
             ["next", "virtual:fb898ce7ef5bcfd217c7d7dca524304ef9b62398b791703ff5fa816f99be43318cb296ba2b6849088e316bb53ae5f832d84766f4377d8b1ced9afdc5b7be9040#npm:12.0.4"],
+            ["papaparse", "npm:5.3.1"],
             ["postcss", "npm:8.4.6"],
             ["prettier", "npm:2.5.0"],
             ["react", "npm:17.0.2"],
@@ -430,26 +430,6 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
           "packageDependencies": [
             ["@fortawesome/fontawesome-svg-core", "npm:1.3.0"],
             ["@fortawesome/fontawesome-common-types", "npm:0.3.0"]
-          ],
-          "linkType": "HARD",
-        }]
-      ]],
-      ["@fortawesome/free-brands-svg-icons", [
-        ["npm:5.15.4", {
-          "packageLocation": "./.yarn/unplugged/@fortawesome-free-brands-svg-icons-npm-5.15.4-59d1d43e20/node_modules/@fortawesome/free-brands-svg-icons/",
-          "packageDependencies": [
-            ["@fortawesome/free-brands-svg-icons", "npm:5.15.4"],
-            ["@fortawesome/fontawesome-common-types", "npm:0.2.36"]
-          ],
-          "linkType": "HARD",
-        }]
-      ]],
-      ["@fortawesome/free-regular-svg-icons", [
-        ["npm:5.15.4", {
-          "packageLocation": "./.yarn/unplugged/@fortawesome-free-regular-svg-icons-npm-5.15.4-04f383e3ab/node_modules/@fortawesome/free-regular-svg-icons/",
-          "packageDependencies": [
-            ["@fortawesome/free-regular-svg-icons", "npm:5.15.4"],
-            ["@fortawesome/fontawesome-common-types", "npm:0.2.36"]
           ],
           "linkType": "HARD",
         }]
@@ -887,6 +867,16 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
         ["npm:17.0.16", {
           "packageLocation": "./.yarn/cache/@types-node-npm-17.0.16-573ed3f9a8-2d452a9e0e.zip/node_modules/@types/node/",
           "packageDependencies": [
+            ["@types/node", "npm:17.0.16"]
+          ],
+          "linkType": "HARD",
+        }]
+      ]],
+      ["@types/papaparse", [
+        ["npm:5.3.2", {
+          "packageLocation": "./.yarn/cache/@types-papaparse-npm-5.3.2-203a9019b3-e8f7f5c251.zip/node_modules/@types/papaparse/",
+          "packageDependencies": [
+            ["@types/papaparse", "npm:5.3.2"],
             ["@types/node", "npm:17.0.16"]
           ],
           "linkType": "HARD",
@@ -4855,6 +4845,15 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
           "linkType": "HARD",
         }]
       ]],
+      ["papaparse", [
+        ["npm:5.3.1", {
+          "packageLocation": "./.yarn/cache/papaparse-npm-5.3.1-8c9c1adec8-3431917bb4.zip/node_modules/papaparse/",
+          "packageDependencies": [
+            ["papaparse", "npm:5.3.1"]
+          ],
+          "linkType": "HARD",
+        }]
+      ]],
       ["parent-module", [
         ["npm:1.0.1", {
           "packageLocation": "./.yarn/cache/parent-module-npm-1.0.1-1fae11b095-6ba8b25514.zip/node_modules/parent-module/",
@@ -5159,12 +5158,11 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
             ["project-exam-scheduling", "workspace:."],
             ["@apollo/client", "virtual:fb898ce7ef5bcfd217c7d7dca524304ef9b62398b791703ff5fa816f99be43318cb296ba2b6849088e316bb53ae5f832d84766f4377d8b1ced9afdc5b7be9040#npm:3.5.8"],
             ["@fortawesome/fontawesome-svg-core", "npm:1.3.0"],
-            ["@fortawesome/free-brands-svg-icons", "npm:5.15.4"],
-            ["@fortawesome/free-regular-svg-icons", "npm:5.15.4"],
             ["@fortawesome/free-solid-svg-icons", "npm:5.15.4"],
             ["@fortawesome/react-fontawesome", "virtual:fb898ce7ef5bcfd217c7d7dca524304ef9b62398b791703ff5fa816f99be43318cb296ba2b6849088e316bb53ae5f832d84766f4377d8b1ced9afdc5b7be9040#npm:0.1.17"],
             ["@types/luxon", "npm:2.0.9"],
             ["@types/node", "npm:16.11.9"],
+            ["@types/papaparse", "npm:5.3.2"],
             ["@types/react", "npm:17.0.36"],
             ["@types/react-beautiful-dnd", "npm:13.1.2"],
             ["@types/styled-components", "npm:5.1.22"],
@@ -5174,6 +5172,7 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
             ["graphql", "npm:16.3.0"],
             ["luxon", "npm:2.3.0"],
             ["next", "virtual:fb898ce7ef5bcfd217c7d7dca524304ef9b62398b791703ff5fa816f99be43318cb296ba2b6849088e316bb53ae5f832d84766f4377d8b1ced9afdc5b7be9040#npm:12.0.4"],
+            ["papaparse", "npm:5.3.1"],
             ["postcss", "npm:8.4.6"],
             ["prettier", "npm:2.5.0"],
             ["react", "npm:17.0.2"],

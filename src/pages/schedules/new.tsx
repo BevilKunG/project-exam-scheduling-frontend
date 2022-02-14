@@ -3,20 +3,19 @@ import {faDownload} from '@fortawesome/free-solid-svg-icons'
 import {NextPage} from 'next'
 import Image from 'next/image'
 import {DatePicker, Layout} from '../../components'
-import useForm, {FormActionType, FormFileName, FormProvider, FormStep} from '../../hooks/useForm'
+import useForm, {FormActionType, FormFileName, FormProvider, FormState, FormStep} from '../../hooks/useForm'
 import styles from '../../styles/ScheduleFormPage.module.sass'
 import {ChangeEvent, createRef} from 'react'
 import {gql, useMutation} from '@apollo/client'
-// import readInfo from '../../utils/read-info'
+import Papa from 'papaparse'
 
 const CREATE_INFORMATION = gql`
   mutation CreateInformation($arg: CreateInformationInput!) {
     createInformation(arg: $arg) {
-      schedule {
+      enrollments {
         _id
-      }
-      sessions {
-        _id
+        studentId
+        courseIds
       }
     }
   }
@@ -131,7 +130,14 @@ function SecondForm() {
     return <h1>loading...</h1>
   }
   console.log(data)
+
   const onCreateClick = async () => {
+    const pass = validate(state)
+    if (!pass) {
+      alert('invalid form')
+      return
+    }
+
     const {
       term,
       academicYear,
@@ -140,29 +146,71 @@ function SecondForm() {
       file,
     } = state
 
-    // const [
-    //   projects,
-    //   rooms,
-    //   enrollments,
-    //   courses
-    // ] = await Promise.all(items.map(({name}) => readInfo(file[name] as File, name)))
-    // console.log(projects, rooms, enrollments, courses)
-
-    // const students = projects.reduce((students, project) => [...students, ...project.students], [])
-    if (file.projectInfo !== null) {
-      const text = await file.projectInfo.text()
-      // console.log(await neatCsv(text))
+    const schedule = {
+      semester: `${term}/${academicYear}`,
+      for: type,
+      dates,
     }
-    // const arg = {
-    //   schedule: {
-    //     semester: `${term}/${academicYear}`,
-    //     for: type,
-    //     dates,
-    //   },
-    // }
-    // createInformation({
-    //   variables: {arg}
-    // })
+    
+    const {
+      projects,
+      rooms,
+      enrollments,
+      courseSchedules,
+    } = await parse(file)
+    
+    const students = projects
+      .reduce<string[]>((students, project) => [...students, ...project.students], [])
+      .filter((v, i, self) => self.indexOf(v) === i)
+
+    // !!! function parse courseSchedule
+    const courses = enrollments
+      .reduce<string[]>((courses, enrollment) => [...courses, ...enrollment.courses], [])
+      .filter((v, i, self) => self.indexOf(v) === i)
+      .map((c) => {
+        const [course, section] = c.split('-')
+        const courseSchedule = courseSchedules
+          .filter((cs) => cs.course === c)
+          .map(({courseSchedule}) => courseSchedule)
+          .reduce((courseSchedule, cs) => [...courseSchedule, ...cs], [])
+          .filter((v, i, self) => self.indexOf(v) === i)
+          .map((cs) => {
+            const matched = cs.match(/([M?T?W?R?F?S?U?]+)([0-9]{4})-([0-9]{4})/)
+
+            // TODO: handle mismatch
+            if (!matched) return [] // alert error ?
+
+            const [_, days, start, end] = matched
+            // day to DayOfWeek
+            const dayOfWeek: {[key: string]: string} = {
+              M: 'MONDAY',
+              T: 'TUESDAY',
+              W: 'WEDNESDAY',
+              R: 'THURSDAY',
+              F: 'FRIDAY',
+              S: 'SATURDAY',
+              U: 'SUNDAY',
+            }
+            return days.split('').map((d) => ({day: dayOfWeek[d], start, end}))
+          })
+          .reduce((courseSchedule, days) => [...courseSchedule, ...days], [])
+
+        return {course, section, courseSchedule}
+      })
+
+    
+    const arg = {
+      schedule,
+      rooms,
+      students,
+      projects,
+      courses,
+      enrollments,
+    }
+    createInformation({
+      variables: {arg}
+    })
+
   }
 
   return (
@@ -246,5 +294,114 @@ function FileUpload({
           onChange={onFileUpload}
           hidden />
     </div>
+  )
+}
+
+async function parse(file: FormState['file']) {
+  const fileHeaders = {
+    projectInfo: ['students', 'subject', 'committees', 'title'],
+    rooms: ['name', 'link'],
+    enrollment: ['student', 'courses'],
+    courseSchedule: ['course', 'courseSchedule'],
+  }
+
+  const config = {
+    header: true,
+    skipEmptyLines: true,
+  }
+  let text: string
+
+  type ProjectData = {
+    students: string
+    subject: string
+    committees: string
+    title: string
+  }
+  text = file.projectInfo ? await file.projectInfo.text() : ''
+  const projects = Papa
+    .parse<ProjectData>(text, {
+      ...config,
+      transformHeader: (_, index) => fileHeaders.projectInfo[index],
+    })
+    .data
+    .map(({students, subject, committees, title}) => ({
+      students: students.split(/\s+/),
+      subject,
+      committees: committees.split(/\s+/), // toLowerCase ?
+      title
+    }))
+
+  type RoomData = {
+    name: string
+    link: string
+  }
+  text = file.rooms ? await file.rooms.text() : ''
+  const rooms = Papa
+    .parse<RoomData>(text, {
+      ...config,
+      transformHeader: (_, index) => fileHeaders.rooms[index]
+    })
+    .data
+    .map(({name, link}) => ({
+      name,
+      link: link.length === 0 ? undefined : link
+    }))
+
+  type EnrollmentData = {
+    student: string
+    courses: string
+  }
+  text = file.enrollment ? await file.enrollment.text() : ''
+  const enrollments = Papa
+    .parse<EnrollmentData>(text, {
+      ...config,
+      transformHeader: (_, index) => fileHeaders.enrollment[index]
+    })
+    .data
+    .map(({student, courses}) => ({
+      student,
+      courses: courses.split(/\s+/)
+    }))
+
+  type CourseScheduleData = {
+    course: string
+    courseSchedule: string
+  }
+  text = file.courseSchedule ? await file.courseSchedule.text() : ''
+  const courseSchedules = Papa
+    .parse<CourseScheduleData>(text, {
+      ...config,
+      transformHeader: (_, index) => fileHeaders.courseSchedule[index]
+    })
+    .data
+    .map(({course, courseSchedule}) => ({
+      course,
+      courseSchedule: courseSchedule !== '' ? courseSchedule.split(/\s+/) : []
+    }))
+
+  return {
+    projects,
+    rooms,
+    enrollments,
+    courseSchedules,
+  }
+}
+
+function validate({
+  term,
+  academicYear,
+  type,
+  dates,
+  file
+}: FormState) {
+  // TODO: return errors
+  return (
+    (/^[0-9]{1}\/[0-9]{4}$/.test(`${term}/${academicYear}`)) &&
+    (true) && // check type
+    (dates.length !== 0) &&
+    (file.projectInfo !== null) &&
+    (file.rooms !== null) &&
+    (file.enrollment !== null) &&
+    (file.courseSchedule !== null)
   )
 }

@@ -56,6 +56,7 @@ export {
   FormStep,
   FormFileName,
 }
+export type {FormState}
 
 type FormAction = {
   type: ActionType
