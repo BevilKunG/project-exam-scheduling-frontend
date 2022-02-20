@@ -1,17 +1,18 @@
-import useGlobal, { GlobalActionType, ViewType } from '../hooks/useGlobal'
-import mockData from '../utils/mock-data'
+import useGlobal, {GlobalActionType, ViewType} from '../hooks/useGlobal'
 import styles from '../styles/menu.module.sass'
 import {Droppable} from '../utils/dnd-dynamic'
-import Card from './Card'
+import Card, { CardStatusType } from './Card'
 import styled from 'styled-components'
-import useMock from '../hooks/useMock'
-import committees from '../utils/mock-data/committees'
+import { GetScheduleQuery, Project} from '../graphql/generated'
+import useSchedule from '../hooks/useSchedule'
 
 interface MenuProps {
-  type: MenuType
+  schedule: GetScheduleQuery['schedule']
 }
 
-function Menu({type}: MenuProps) {
+function Menu({schedule}: MenuProps) {
+  const {state} = useGlobal()
+  const type = !state.isEditMode ? MenuType.View : MenuType.Project
   switch (type) {
     case MenuType.View:
       return (
@@ -24,7 +25,7 @@ function Menu({type}: MenuProps) {
     case MenuType.Project:
       return (
         <div className={styles.container}>
-          <ProjectMenu />
+          <ProjectMenu projects={schedule.projects} />
         </div>
       )
   }
@@ -137,21 +138,22 @@ const MenuItem = styled.button<MenuItemProps>`
     color: white;
   `}
 `
-
-function ProjectMenu() {
-  const {state} = useMock()
-  const {columns} = state
-
-  const column = columns['column-0']
-  const {projectIds} = column
+interface ProjectMenuProps {
+  projects: GetScheduleQuery['schedule']['projects']
+}
+function ProjectMenu({projects}: ProjectMenuProps) {
+  const {state} = useSchedule()
+  const {examinations} = state
   
-  const {projects} = mockData
+  const unscheduled = examinations
+    .filter(({sessionId, roomId}) => !(sessionId && roomId))
+    .map(({projectId}) => (projects.find((project) => project._id === projectId) as Project))
 
   return (
     <div className={`${styles.project} ${styles.menu}`}>
       <h2 className={styles.title}>Projects</h2>
 
-      <Droppable droppableId="column-0">
+      <Droppable droppableId="initial">
         {
           (provided) => (
             <div 
@@ -159,8 +161,8 @@ function ProjectMenu() {
               {...provided.droppableProps}
               className={styles.list}>
               {provided.placeholder}
-              {projectIds.map((projectId: string, index: number) => (
-                <Card key={projectId} {...{project: projects[projectId], column, index}}  />
+              {unscheduled.map((project, index) => (
+                <Card key={project._id} {...{project, index, status: CardStatusType.Unscheduled}}  />
               ))}
             </div>
           )

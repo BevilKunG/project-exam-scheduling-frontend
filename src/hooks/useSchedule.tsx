@@ -8,16 +8,19 @@ import {
 } from 'react'
 
 type ScheduleState = {
-  type: ScheduleType | null
+  changed: boolean
+  examinations: Examination[]
 }
 
-enum ScheduleType {
-  Schedule = 'SCHEDULE',
-  Availability = 'AVAILABILITY',
+type Examination = {
+  projectId: string
+  sessionId: string | null
+  roomId: string | null
 }
 
 const initialState: ScheduleState = {
-  type: null,
+  changed: false,
+  examinations: [],
 }
 
 const useSchedule = () => useContext(ScheduleContext)
@@ -26,18 +29,19 @@ export default useSchedule
 export {
   ScheduleProvider,
   ActionType as ScheduleActionType,
-  ScheduleType,
 }
 
 type ScheduleAction = {
-  type: ActionType,
-  payload: {
-    type: ScheduleType
-  }
+  type: ActionType
+  payload: Partial<{
+    examinations: Examination[]
+    examination: Examination
+  }>
 }
 
 enum ActionType {
-  SetType = 'SET_TYPE'
+  SetExaminations = 'SET_EXAMINATIONS',
+  MoveProject = 'MOVE_PROJECT'
 }
 
 
@@ -63,8 +67,25 @@ const ScheduleProvider: FC = ({children}) => {
 
 const reducer: Reducer<ScheduleState, ScheduleAction> = (state, action) => {
   switch (action.type) {
-    case ActionType.SetType:
-      return {...state, type: action.payload.type}
+    case ActionType.SetExaminations: {
+      if (!action.payload.examinations) {
+        return state
+      }
+      return {...state, examinations: action.payload.examinations}
+    }
+      
+
+    case ActionType.MoveProject: {
+      if (!action.payload.examination) {
+        return state
+      }
+      const examinations = state.examinations.map((examination) => {
+        return examination.projectId === action.payload.examination?.projectId ? 
+          action.payload.examination
+          : examination
+      })
+      return {...state, changed: true, examinations}
+    }
 
     default: return state
   }

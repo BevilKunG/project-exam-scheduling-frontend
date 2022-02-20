@@ -2,20 +2,22 @@ import {FontAwesomeIcon} from '@fortawesome/react-fontawesome'
 import {faDownload} from '@fortawesome/free-solid-svg-icons'
 import {NextPage} from 'next'
 import Image from 'next/image'
+import {useRouter} from 'next/router'
+import {gql, useMutation} from '@apollo/client'
+import Papa from 'papaparse'
+import axios from 'axios'
 import {DatePicker, Layout} from '../../components'
 import useForm, {FormActionType, FormFileName, FormProvider, FormState, FormStep} from '../../hooks/useForm'
 import styles from '../../styles/ScheduleFormPage.module.sass'
 import {ChangeEvent, createRef} from 'react'
-import {gql, useMutation} from '@apollo/client'
-import Papa from 'papaparse'
+import { DayOfWeek, ScheduleFor } from '../../graphql/generated'
+
 
 const CREATE_INFORMATION = gql`
   mutation CreateInformation($arg: CreateInformationInput!) {
     createInformation(arg: $arg) {
-      enrollments {
+      schedule {
         _id
-        studentId
-        courseIds
       }
     }
   }
@@ -25,7 +27,7 @@ const ScheduleFormPage: NextPage = () => {
   return (
     <Layout>
       <div className={`${styles.container} pt-2`}>
-        <h1 className="text-3xl font-semibold text-gray-700 text-center">Create exam schedule</h1>
+        <h1 className="text-3xl font-semibold text-gray-700 text-center">Create Schedule</h1>
 
         <FormProvider>
           <Form />
@@ -89,8 +91,8 @@ function FirstForm() {
               className="w-64 h-9 px-4 py-1 text-lg border border-gray-400 rounded"
               onChange={(e) => dispatch({type: FormActionType.SetType, payload: {type: e.target.value}})}
               value={state.type}>
-              <option value="MIDTERM">Midterm</option>
-              <option value="FINAL">Final</option>
+              <option value={ScheduleFor.Midterm}>Midterm</option>
+              <option value={ScheduleFor.Final}>Final</option>
             </select>
           </div>
 
@@ -117,6 +119,7 @@ function FirstForm() {
 }
 
 function SecondForm() {
+  const router = useRouter()
   const {state, dispatch} = useForm()
   const items = [
     {name: FormFileName.ProjectInfo, label: 'Project information', template: '/templates/project-info.csv'},
@@ -125,11 +128,19 @@ function SecondForm() {
     {name: FormFileName.CourseSchedule, label: 'Course schedule', template: '/templates/course-schedule.csv'},
   ]
 
-  const [createInformation, {data, loading, error}] = useMutation(CREATE_INFORMATION)
+  const [createInformation, {data, loading, error}] = useMutation(CREATE_INFORMATION, {
+    onCompleted: ({createInformation: {schedule}}) => {
+      axios.post(`http://localhost:5000/scheduler/${schedule._id}`)
+      router.push(`/schedules/${schedule._id}`)
+    }
+  })
+
   if (loading) {
     return <h1>loading...</h1>
   }
-  console.log(data)
+  if (error) {
+    return <h1>error</h1>
+  }
 
   const onCreateClick = async () => {
     const pass = validate(state)
@@ -175,23 +186,24 @@ function SecondForm() {
           .reduce((courseSchedule, cs) => [...courseSchedule, ...cs], [])
           .filter((v, i, self) => self.indexOf(v) === i)
           .map((cs) => {
-            const matched = cs.match(/([M?T?W?R?F?S?U?]+)([0-9]{4})-([0-9]{4})/)
+            const matched = cs.match(/([MTWRFSU]+)([0-9]{4})-([0-9]{4})/)
 
             // TODO: handle mismatch
             if (!matched) return [] // alert error ?
 
             const [_, days, start, end] = matched
-            // day to DayOfWeek
             const dayOfWeek: {[key: string]: string} = {
-              M: 'MONDAY',
-              T: 'TUESDAY',
-              W: 'WEDNESDAY',
-              R: 'THURSDAY',
-              F: 'FRIDAY',
-              S: 'SATURDAY',
-              U: 'SUNDAY',
+              M: DayOfWeek.Monday,
+              T: DayOfWeek.Tuesday,
+              W: DayOfWeek.Wednesday,
+              R: DayOfWeek.Thursday,
+              F: DayOfWeek.Friday,
+              S: DayOfWeek.Saturday,
+              U: DayOfWeek.Sunday,
             }
-            return days.split('').map((d) => ({day: dayOfWeek[d], start, end}))
+            return days
+              .split('')
+              .map((d) => ({day: dayOfWeek[d], start: `${start.slice(0, 2)}:${start.slice(2, 4)}`, end: `${end.slice(0, 2)}:${end.slice(2, 4)}`}))
           })
           .reduce((courseSchedule, days) => [...courseSchedule, ...days], [])
 
@@ -390,7 +402,6 @@ async function parse(file: FormState['file']) {
 function validate({
   term,
   academicYear,
-  type,
   dates,
   file
 }: FormState) {

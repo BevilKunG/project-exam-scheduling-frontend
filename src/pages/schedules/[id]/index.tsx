@@ -1,6 +1,8 @@
 import {FontAwesomeIcon} from '@fortawesome/react-fontawesome'
 import {faShare} from '@fortawesome/free-solid-svg-icons'
-import {DragDropContext, Droppable} from '../../../utils/dnd-dynamic'
+import {DragDropContext} from '../../../utils/dnd-dynamic'
+import {useRouter} from 'next/router'
+import {useEffect} from 'react'
 import {
   Layout,
   Schedule,
@@ -8,29 +10,107 @@ import {
   Menu,
 } from '../../../components'
 import styles from '../../../styles/SchedulePage.module.sass'
-import useGlobal, { GlobalActionType } from '../../../hooks/useGlobal'
+import useGlobal, {GlobalActionType} from '../../../hooks/useGlobal'
 import {NextPage} from 'next'
-import { MenuType } from '../../../components/Menu'
-import useMock, { MockActionType } from '../../../hooks/useMock'
+import {gql, useLazyQuery} from '@apollo/client'
+import {
+  GetScheduleQuery,
+  GetScheduleQueryVariables,
+  ScheduleStatus,
+} from '../../../graphql/generated'
+import {DropResult} from 'react-beautiful-dnd'
+import useSchedule, { ScheduleActionType } from '../../../hooks/useSchedule'
+
+const GET_SCHEDULE = gql`
+  query GetSchedule($scheduleId: String!) {
+    schedule(id: $scheduleId) {
+      _id
+      semester
+      for
+      dates
+      projects {
+        _id
+        title
+        subject
+        examination {
+          _id
+          session {
+            _id
+          }
+          room {
+            _id
+          }
+        }
+      }
+      sessions {
+        _id
+        date
+        time {
+          start
+          end
+        }
+      }
+      rooms {
+        _id
+        name
+      }
+      status
+    }
+  }
+`
 
 const SchedulePage: NextPage = () => {
-  const {state: globalState} = useGlobal()
-  const {isEditMode} = globalState
+  const router = useRouter()
+  const {id: scheduleId} = router.query
 
-  // legacy section
-  const {state: mockState, dispatch: dispatchMock} = useMock()
-  const {columns} = mockState
+  const [getSchedule, {loading, error, data}] = useLazyQuery<GetScheduleQuery, GetScheduleQueryVariables>(GET_SCHEDULE)
+  useEffect(() => {
+    if (typeof scheduleId === 'string') {
+      getSchedule({
+        variables: {scheduleId},
+      })
+    }
+  }, [scheduleId, getSchedule])
 
-  function setColumns(columns: any) {
-    dispatchMock({
-      type: MockActionType.SetColumns,
-      payload: {
-        columns
-      }
-    })
+  const {state, dispatch} = useSchedule()
+  console.log(state)
+  useEffect(() => {
+    if (data) {
+      const examinations = data.schedule.projects.map(({_id, examination}) => ({
+        projectId: _id,
+        sessionId: examination ? examination.session._id : null,
+        roomId: examination ? examination.room._id : null,
+      }))
+      dispatch({
+        type: ScheduleActionType.SetExaminations,
+        payload: {examinations},
+      })
+    }
+  }, [data, dispatch])
+
+  // handle query result
+  if (!scheduleId || !data) {
+    return <></>
   }
 
-  const onDragEnd = (result: any) => {
+  if (loading) {
+    return <h1>loading...</h1>
+  }
+
+  if (error) {
+    return <h1>error</h1>
+  }
+
+  if (!data.schedule) {
+    return <></>
+  }
+
+  const {schedule} = data
+  if (schedule.status !== ScheduleStatus.Ready) {
+    return <WaitingPage />
+  }
+
+  const onDragEnd = (result: DropResult) => {
     const {destination, source, draggableId} = result
 
     if (!destination) return
@@ -38,29 +118,34 @@ const SchedulePage: NextPage = () => {
       destination.droppableId === source.droppableId &&
       destination.index === source.index
     ) return
+    if (destination.droppableId === 'initial') {
+      dispatch({
+        type: ScheduleActionType.MoveProject,
+        payload: {examination: {projectId: draggableId, sessionId: null, roomId: null}}
+      })
+    }
 
-    const srcCol= columns[source.droppableId]
-    const destCol = columns[destination.droppableId]
-    const srcProjectIds = Array.from(srcCol.projectIds)
-    const destProjectIds = Array.from(destCol.projectIds)
+    const [sessionId, roomId] = destination.droppableId.split(',')
+    const exist = schedule.projects.filter(({examination}) => (
+      examination && 
+      examination.session._id === sessionId &&
+      examination.room._id === roomId
+    )).length !== 0
+    if (exist) return
 
-    // if (destProjectIds.length > 0) return
-    srcProjectIds.splice(source.index, 1)
-    destProjectIds.splice(destination.index, 0, draggableId)
+    const examination = {
+      projectId: draggableId,
+      sessionId,
+      roomId,
+    }
 
-    setColumns({
-      ...columns,
-      [srcCol.id]: {
-        ...srcCol,
-        projectIds: srcProjectIds
-      },
-      [destCol.id]: {
-        ...destCol,
-        projectIds: destProjectIds
-      }
+    dispatch({
+      type: ScheduleActionType.MoveProject,
+      payload: {examination}
     })
   }
-  //
+
+  const title = `CPE/ISNE Project ปลายภาค ${schedule.semester}`
 
   return (
     <Layout>
@@ -68,18 +153,18 @@ const SchedulePage: NextPage = () => {
         <Navigation />
         <DragDropContext onDragEnd={onDragEnd}>
           <div className={styles.container}>
-            <Menu type={isEditMode ? MenuType.Project : MenuType.View} />
+            <Menu schedule={schedule} />
 
             <div>
               <div className="flex flex-row justify-between align-center ml-16 mb-4">
-                <h1 className="text-2xl text-gray-700 font-semibold">CPE/ISNE Project ปลายภาค 1/2564</h1>
+                <h1 className="text-2xl text-gray-700 font-semibold">{title}</h1>
                 <button className={`${styles.publish} shadow-md`}>
                   <FontAwesomeIcon icon={faShare} size="lg" />
                   <span className="ml-1">Publish</span>
                 </button>
               </div>
 
-              <Schedule />
+              <Schedule schedule={schedule}/>
             </div>
           </div>
         </DragDropContext>
@@ -123,5 +208,14 @@ function Bottom() {
         }
       </div>
     </div>
+  )
+}
+
+function WaitingPage() {
+  return (
+    <Layout>
+      <h1>waiting...</h1>
+      <button>refresh</button>
+    </Layout>
   )
 }

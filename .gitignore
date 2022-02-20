@@ -45,5 +45,8 @@ yarn-error.log*
 !.yarn/sdks
 !.yarn/versions
 
+# graphql-codegen
+/src/graphql/
+
 # infomation examples
 /src/utils/examples

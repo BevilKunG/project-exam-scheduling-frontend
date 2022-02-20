@@ -20,7 +20,7 @@ enum ViewType {
 }
 
 const initialState: GlobalState = {
-  isEditMode: false,
+  isEditMode: true, // init: false
   view: ViewType.All
 }
 

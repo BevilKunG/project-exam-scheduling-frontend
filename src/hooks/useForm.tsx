@@ -6,6 +6,7 @@ import {
   Reducer,
   Dispatch,
 } from 'react'
+import { ScheduleFor } from '../graphql/generated'
 
 enum FormStep {
   First = 'FIRST',
@@ -23,7 +24,7 @@ type FormState = {
   step: FormStep
   term: string
   academicYear: string
-  type: string // scheduleFor
+  type: ScheduleFor
   dates: string[]
   file: {
     projectInfo: File | null
@@ -37,7 +38,7 @@ const initialState: FormState = {
   step: FormStep.First,
   term: '',
   academicYear: '',
-  type: 'MIDTERM',
+  type: ScheduleFor.Midterm,
   dates: [],
   file: {
     projectInfo: null,

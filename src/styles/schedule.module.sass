@@ -1,33 +1,35 @@
 .schedule
-  width: 100%
+  width: calc(100vw - 20rem)
+  height: calc(100vh - 16rem)
+  display: flex
+  overflow: scroll
 
-.schedule
-  .header
-    border-top-left-radius: 0.5rem
-    border-top-right-radius: 0.5rem
-    margin-left: calc(4rem - 3px)
-    padding: 0.25rem 0.5rem
-    .title
-      color: white
-      font-size: 1rem
-      line-height: 1.5rem
+
+// .schedule
+//   .header
+//     border-top-left-radius: 0.5rem
+//     border-top-right-radius: 0.5rem
+//     margin-left: calc(4rem - 3px)
+//     padding: 0.25rem 0.5rem
+//     .title
+//       color: white
+//       font-size: 1rem
+//       line-height: 1.5rem
       
 
-.schedule
-  .body
-    height: calc(100vh - 20rem)
-    display: flex
-    flex-direction: row
-    overflow-y: scroll 
+// .schedule
+//   .body
+//     height: calc(100vh - 20rem)
+//     display: flex
+//     flex-direction: row
+//     overflow-y: scroll 
 
-  .body::-webkit-scrollbar
-    display: none
+//   .body::-webkit-scrollbar
+//     display: none
 
-
-.row
-  height: 3rem
+.header
+  background: #53DD6C
+  
+.slot
+  height: 2.5rem
   border: 1px solid rgb(229 231 235)
-
-.row.card
-  display: grid
-  column-gap: 0.125rem

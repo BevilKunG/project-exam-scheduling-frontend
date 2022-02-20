@@ -1,55 +1,47 @@
 import {Draggable} from '../utils/dnd-dynamic'
 import styled from 'styled-components'
 import styles from '../styles/card.module.sass'
-import useGlobal from '../hooks/useGlobal'
 import useModal, {ModalActionType} from '../hooks/useModal'
+import {Project, ProjectSubject } from '../graphql/generated'
 
 interface CardProps {
-  project: any
-  column: any
-  index: number
+  project: Project
+  status: StatusType
   draggable?: boolean
+  index?: number
 }
-
 enum StatusType {
   Unscheduled = 'UNSCHEDULED',
   Excellent = 'EXCELLENT',
   Good = 'GOOD',
   Bad = 'BAD'
 }
-
 function Card({
   project, 
-  column, 
-  index,
+  status,
   draggable=true,
+  index=0,
 }: CardProps) {
-  const {dispatch: dispatchModal} = useModal()
+  const {dispatch} = useModal()
 
   const title = project.title.replace(/^(.{30}[^\s]*).*/, '$1')
-  const status: StatusType = ((project, column) => {
-    if(column.id === 'column-0') {
-      return StatusType.Unscheduled
-    }    
-    return StatusType.Excellent
-  })(project, column)
 
-  function openInfo(info: any) {
-    dispatchModal({
+  function openInfo(project: Project) {
+    dispatch({
       type: ModalActionType.OpenInfo,
-      payload: {info}
+      payload: {info: project}
     })
   }
   
   return draggable ? (
-    <Draggable draggableId={project.id} index={index}>
+    <Draggable draggableId={project._id} index={0}>
       {
         (provided) => (
           <Container 
             {...provided.draggableProps}
             {...provided.dragHandleProps}
             ref={provided.innerRef}
-            status={status}
+            {...{subject: project.subject, status}}
             className={styles.card}>
             <h4 className={styles.title}>{title}</h4>
             <Status status={status} />
@@ -59,7 +51,7 @@ function Card({
     </Draggable>
   ) : (
     <Container
-      status={status}
+      {...{subject: project.subject, status}}
       className={styles.card}
       onClick={() => openInfo(project)}
       >
@@ -70,12 +62,22 @@ function Card({
 }
 
 export default Card
+export {StatusType as CardStatusType}
 
 interface ContainerProps {
+  subject: ProjectSubject
   status: StatusType
 }
-
 const Container = styled.div<ContainerProps>`
+  background: ${({subject}) => {
+    switch (subject) {
+      case ProjectSubject.Cpe491: return '#0496FF'
+      case ProjectSubject.Cpe492: return '#12BA42'
+      case ProjectSubject.Isne491: return '#FF3366'
+      case ProjectSubject.Isne492: return '#9E3CB9'
+    }
+  }};
+
   ${({status}) => {
     if (status === StatusType.Bad) return 'border: 3px solid #FC6464;'
     return ''
@@ -85,7 +87,6 @@ const Container = styled.div<ContainerProps>`
 interface StatusProps {
   status: StatusType
 }
-
 const Status = styled.div<StatusProps>`
   background: ${({status}) => {
     switch(status) {
@@ -95,8 +96,8 @@ const Status = styled.div<StatusProps>`
       case StatusType.Bad: return '#FC6464'
     }
   }};
-  width: 0.625rem;
-  height: 0.625rem;
+  width: 0.5rem;
+  height: 0.5rem;
   border-radius: 9999px;
   position: absolute;
   top: 0.25rem;

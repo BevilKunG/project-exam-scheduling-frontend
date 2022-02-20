@@ -4,6 +4,7 @@ import {ModalPlaceholder} from '../components/Modal'
 import {GlobalProvider} from '../hooks/useGlobal'
 import {ModalProvider} from '../hooks/useModal'
 import {MockProvider} from '../hooks/useMock'
+import {ScheduleProvider} from '../hooks/useSchedule'
 import {
   ApolloClient,
   ApolloProvider,
@@ -19,12 +20,14 @@ function MyApp({Component, pageProps}: AppProps) {
   return (
     <ApolloProvider client={client}>
       <GlobalProvider>
-        <MockProvider>
-          <ModalProvider>
-            <Component {...pageProps} />
-            <ModalPlaceholder />
-          </ModalProvider>
-        </MockProvider>
+        <ScheduleProvider>
+          <MockProvider>
+            <ModalProvider>
+              <Component {...pageProps} />
+              <ModalPlaceholder />
+            </ModalProvider>
+          </MockProvider>
+        </ScheduleProvider>
       </GlobalProvider>
     </ApolloProvider>
   )
