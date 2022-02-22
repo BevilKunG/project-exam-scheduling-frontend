@@ -8,7 +8,7 @@ import {
 } from 'react'
 
 type ScheduleState = {
-  changed: boolean
+  original: Examination[]
   examinations: Examination[]
 }
 
@@ -19,7 +19,7 @@ type Examination = {
 }
 
 const initialState: ScheduleState = {
-  changed: false,
+  original: [],
   examinations: [],
 }
 
@@ -71,7 +71,8 @@ const reducer: Reducer<ScheduleState, ScheduleAction> = (state, action) => {
       if (!action.payload.examinations) {
         return state
       }
-      return {...state, examinations: action.payload.examinations}
+      const {examinations} = action.payload
+      return {...state, examinations, original: examinations}
     }
       
 
@@ -84,7 +85,7 @@ const reducer: Reducer<ScheduleState, ScheduleAction> = (state, action) => {
           action.payload.examination
           : examination
       })
-      return {...state, changed: true, examinations}
+      return {...state, examinations}
     }
 
     default: return state

@@ -10,6 +10,7 @@ import useGlobal from '../hooks/useGlobal'
 import useSchedule from '../hooks/useSchedule'
 import styles from '../styles/schedule.module.sass'
 import {Droppable} from '../utils/dnd-dynamic'
+import committees from '../utils/mock-data/committees'
 import {CardStatusType} from './Card'
 
 interface ScheduleProps {
@@ -151,8 +152,32 @@ function Slot({
     : null
 
   // calculate card status
-  const status = CardStatusType.Excellent
+  const status = ((project, session) => {
+    if (!project) return
+    const studentsJoined = project.students.reduce((b, {availability}) => {
+      const sessionIds = availability.sessions.map(({_id}) => _id)
+      return b && (sessionIds.includes(session._id))
+    }, true)
 
+    const availableCommitteeCount = project
+      .committees
+      .reduce((count, {availability}) => {
+        const available = availability.sessions.map(({_id}) => _id).includes(session._id)
+          return count + (available ? 1 : 0)
+      }, 0)
+    const committeesEnough = availableCommitteeCount >= 2
+
+    const advisorJoined = project
+      .advisor
+      .availability
+      .sessions
+      .map(({_id}) => _id)
+      .includes(session._id)
+
+    if (!studentsJoined || !advisorJoined || !committeesEnough) return CardStatusType.Bad
+    if (availableCommitteeCount < project.committees.length) return CardStatusType.Good
+    return CardStatusType.Excellent
+  })(project, session)
 
   return isEditMode ? (
     <Droppable droppableId={`${session._id},${room._id}`}>

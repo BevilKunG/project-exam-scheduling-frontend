@@ -146,7 +146,7 @@ function ProjectMenu({projects}: ProjectMenuProps) {
   const {examinations} = state
   
   const unscheduled = examinations
-    .filter(({sessionId, roomId}) => !(sessionId && roomId))
+    .filter(({sessionId, roomId}) => (!sessionId || !roomId))
     .map(({projectId}) => (projects.find((project) => project._id === projectId) as Project))
 
   return (
@@ -162,7 +162,7 @@ function ProjectMenu({projects}: ProjectMenuProps) {
               className={styles.list}>
               {provided.placeholder}
               {unscheduled.map((project, index) => (
-                <Card key={project._id} {...{project, index, status: CardStatusType.Unscheduled}}  />
+                <Card key={project._id} {...{project, index}}  />
               ))}
             </div>
           )

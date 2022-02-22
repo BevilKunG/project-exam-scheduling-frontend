@@ -20,7 +20,7 @@ enum ViewType {
 }
 
 const initialState: GlobalState = {
-  isEditMode: true, // init: false
+  isEditMode: false,
   view: ViewType.All
 }
 
@@ -36,9 +36,9 @@ export {
 
 type GlobalAction = {
   type: ActionType
-  payload?: {
+  payload?: Partial<{
     view: ViewType
-  }
+  }>
 }
 
 enum ActionType {
@@ -73,10 +73,12 @@ const reducer: Reducer<GlobalState, GlobalAction> = (state, action) => {
     
     case ActionType.EditModeOff:
       return {...state, isEditMode: false}
-
-    case ActionType.SetView:
-      if (!action.payload)
+      
+    case ActionType.SetView: {
+      if (!action.payload?.view) {
         return state
+      }
       return {...state, view: action.payload.view}
+    }
   }
 }

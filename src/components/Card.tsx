@@ -2,11 +2,11 @@ import {Draggable} from '../utils/dnd-dynamic'
 import styled from 'styled-components'
 import styles from '../styles/card.module.sass'
 import useModal, {ModalActionType} from '../hooks/useModal'
-import {Project, ProjectSubject } from '../graphql/generated'
+import {Project, ProjectSubject} from '../graphql/generated'
 
 interface CardProps {
   project: Project
-  status: StatusType
+  status?: StatusType
   draggable?: boolean
   index?: number
 }
@@ -17,8 +17,8 @@ enum StatusType {
   Bad = 'BAD'
 }
 function Card({
-  project, 
-  status,
+  project,
+  status=StatusType.Unscheduled,
   draggable=true,
   index=0,
 }: CardProps) {
@@ -27,6 +27,8 @@ function Card({
   const title = project.title.replace(/^(.{30}[^\s]*).*/, '$1')
 
   function openInfo(project: Project) {
+    // TODO: fix project on modal
+    return
     dispatch({
       type: ModalActionType.OpenInfo,
       payload: {info: project}
@@ -34,7 +36,7 @@ function Card({
   }
   
   return draggable ? (
-    <Draggable draggableId={project._id} index={0}>
+    <Draggable draggableId={project._id} index={index}>
       {
         (provided) => (
           <Container 

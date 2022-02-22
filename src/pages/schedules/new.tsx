@@ -130,7 +130,6 @@ function SecondForm() {
 
   const [createInformation, {data, loading, error}] = useMutation(CREATE_INFORMATION, {
     onCompleted: ({createInformation: {schedule}}) => {
-      axios.post(`http://localhost:5000/scheduler/${schedule._id}`)
       router.push(`/schedules/${schedule._id}`)
     }
   })
@@ -138,6 +137,7 @@ function SecondForm() {
   if (loading) {
     return <h1>loading...</h1>
   }
+
   if (error) {
     return <h1>error</h1>
   }
@@ -327,6 +327,7 @@ async function parse(file: FormState['file']) {
     students: string
     subject: string
     committees: string
+    advisor: string
     title: string
   }
   text = file.projectInfo ? await file.projectInfo.text() : ''
@@ -339,8 +340,9 @@ async function parse(file: FormState['file']) {
     .map(({students, subject, committees, title}) => ({
       students: students.split(/\s+/),
       subject,
-      committees: committees.split(/\s+/), // toLowerCase ?
-      title
+      committees: committees.split(/\s+/).map((c) => c.toLowerCase()), // toLowerCase ?
+      advisor: committees.split(/\s+/)[0].toLowerCase(),
+      title,
     }))
 
   type RoomData = {
