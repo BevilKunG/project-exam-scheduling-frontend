@@ -3,6 +3,8 @@ import styled from 'styled-components'
 import styles from '../styles/card.module.sass'
 import useModal, {ModalActionType} from '../hooks/useModal'
 import {Project, ProjectSubject} from '../graphql/generated'
+import { useEffect } from 'react'
+import useSchedule, { ScheduleActionType } from '../hooks/useSchedule'
 
 interface CardProps {
   project: Project
@@ -22,14 +24,15 @@ function Card({
   draggable=true,
   index=0,
 }: CardProps) {
-  const {dispatch} = useModal()
+  const {dispatch: dispatchSchedule} = useSchedule()
+  const {dispatch: dispatchModal} = useModal()
 
-  const title = project.title.replace(/^(.{30}[^\s]*).*/, '$1')
+  const title =  project.title.length > 30 ? `${project.title.replace(/^(.{30}[^\s]*).*/, '$1')}...` : project.title
 
   function openInfo(project: Project) {
     // TODO: fix project on modal
     return
-    dispatch({
+    dispatchModal({
       type: ModalActionType.OpenInfo,
       payload: {info: project}
     })
@@ -38,17 +41,19 @@ function Card({
   return draggable ? (
     <Draggable draggableId={project._id} index={index}>
       {
-        (provided) => (
-          <Container 
-            {...provided.draggableProps}
-            {...provided.dragHandleProps}
-            ref={provided.innerRef}
-            {...{subject: project.subject, status}}
-            className={styles.card}>
-            <h4 className={styles.title}>{title}</h4>
-            <Status status={status} />
-          </Container>
-        )
+        (provided) => {
+          return (
+            <Container 
+              {...provided.draggableProps}
+              {...provided.dragHandleProps}
+              ref={provided.innerRef}
+              {...{subject: project.subject, status}}
+              className={styles.card}>
+              <h4 className={styles.title}>{title}</h4>
+              <Status status={status} />
+            </Container>
+          )
+        }
       }
     </Draggable>
   ) : (

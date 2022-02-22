@@ -10,6 +10,7 @@ import {
 type ScheduleState = {
   original: Examination[]
   examinations: Examination[]
+  dragging: string | null
 }
 
 type Examination = {
@@ -21,6 +22,7 @@ type Examination = {
 const initialState: ScheduleState = {
   original: [],
   examinations: [],
+  dragging: null,
 }
 
 const useSchedule = () => useContext(ScheduleContext)
@@ -36,12 +38,14 @@ type ScheduleAction = {
   payload: Partial<{
     examinations: Examination[]
     examination: Examination
+    dragging: string | null
   }>
 }
 
 enum ActionType {
   SetExaminations = 'SET_EXAMINATIONS',
-  MoveProject = 'MOVE_PROJECT'
+  MoveProject = 'MOVE_PROJECT',
+  Drag = 'DRAG',
 }
 
 
@@ -86,6 +90,13 @@ const reducer: Reducer<ScheduleState, ScheduleAction> = (state, action) => {
           : examination
       })
       return {...state, examinations}
+    }
+
+    case ActionType.Drag: {
+      if (action.payload.dragging === undefined) {
+        return state
+      }
+      return {...state, dragging: action.payload.dragging}
     }
 
     default: return state

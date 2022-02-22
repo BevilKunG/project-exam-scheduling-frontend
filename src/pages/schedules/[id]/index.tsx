@@ -20,7 +20,7 @@ import {
   UpdateExaminationsMutation,
   UpdateExaminationsMutationVariables,
 } from '../../../graphql/generated'
-import {DropResult} from 'react-beautiful-dnd'
+import {DragStart, DropResult} from 'react-beautiful-dnd'
 import useSchedule, { ScheduleActionType } from '../../../hooks/useSchedule'
 
 const GET_SCHEDULE = gql`
@@ -157,8 +157,19 @@ const SchedulePage: NextPage = () => {
   }
   // console.log(schedule)
 
+  const onDragStart = (result: DragStart) => {
+    const {draggableId} = result
+    dispatch({
+      type: ScheduleActionType.Drag,
+      payload: {dragging: draggableId}
+    })
+  }
   const onDragEnd = (result: DropResult) => {
     const {destination, source, draggableId} = result
+    dispatch({
+      type: ScheduleActionType.Drag,
+      payload: {dragging: null}
+    })
 
     if (!destination) return
     if (
@@ -198,7 +209,7 @@ const SchedulePage: NextPage = () => {
       <div className={styles.background}>
         <Navigation />
         <DragDropContext 
-          // onDragStart={onDragStart}
+          onDragStart={onDragStart}
           onDragEnd={onDragEnd}>
           <div className={styles.container}>
             <Menu schedule={schedule} />
@@ -206,10 +217,7 @@ const SchedulePage: NextPage = () => {
             <div>
               <div className="flex flex-row justify-between align-center ml-16 mb-4">
                 <h1 className="text-2xl text-gray-700 font-semibold">{title}</h1>
-                <button className={`${styles.publish} shadow-md`}>
-                  <FontAwesomeIcon icon={faShare} size="lg" />
-                  <span className="ml-1">Publish</span>
-                </button>
+                <PublishButton />
               </div>
 
               <Schedule schedule={schedule}/>
@@ -224,12 +232,27 @@ const SchedulePage: NextPage = () => {
 
 export default SchedulePage
 
+function PublishButton() {
+  const onPublish = () => {
+    console.log('publish')
+  }
+  return (
+    <button
+      onClick={onPublish}
+      className={`${styles.publish} shadow-md`}>
+      <FontAwesomeIcon icon={faShare} size="lg" />
+      <span className="ml-1">Publish</span>
+    </button>
+  )
+}
+
 interface BottomProps {
   schedule: GetScheduleQuery['schedule']
 }
 function Bottom({
   schedule,
 }: BottomProps) {
+  const router = useRouter()
   const {state: globalState, dispatch: dispatchGlobal} = useGlobal()
   const {isEditMode} = globalState
 
@@ -239,13 +262,14 @@ function Bottom({
   const [updateExamination, {loading, error, data}] = useMutation<UpdateExaminationsMutation, UpdateExaminationsMutationVariables>(
     UPDATE_EXAMINATIONS, {
       update(cache) {
-        // TODO: recheck
+        // TODO: manage local state instead
         cache.reset()
-        dispatchSchedule({
-          type: ScheduleActionType.SetExaminations,
-          payload: {examinations}
-        })
-        dispatchGlobal({type: GlobalActionType.EditModeOff})
+        router.reload()
+        // dispatchSchedule({
+        //   type: ScheduleActionType.SetExaminations,
+        //   payload: {examinations}
+        // })
+        // dispatchGlobal({type: GlobalActionType.EditModeOff})
       }
     }
   )
@@ -266,6 +290,14 @@ function Bottom({
         || (examination.roomId !== original[index].roomId)
         // || (examination.projectId !== original[index].projectId)
     }, false)
+
+  const onCancel = () => {
+    dispatchSchedule({
+      type: ScheduleActionType.SetExaminations,
+      payload: {examinations: original}
+    })
+    dispatchGlobal({type: GlobalActionType.EditModeOff})
+  }
 
   const onSave = () => {
     const diffs = examinations
@@ -304,7 +336,7 @@ function Bottom({
             <>
               <button 
                 className={`${styles.cancel} mr-10`}
-                onClick={() => dispatchGlobal({type: GlobalActionType.EditModeOff})}>
+                onClick={onCancel}>
                   Cancel
               </button>
 
