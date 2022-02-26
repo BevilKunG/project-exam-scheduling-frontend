@@ -130,7 +130,7 @@ function SecondForm() {
 
   const [createInformation, {data, loading, error}] = useMutation(CREATE_INFORMATION, {
     onCompleted: ({createInformation: {schedule}}) => {
-      router.push(`/schedules/${schedule._id}`)
+      router.replace(`/schedules/${schedule._id}`)
     }
   })
 
@@ -142,7 +142,7 @@ function SecondForm() {
     return <h1>error</h1>
   }
 
-  const onCreateClick = async () => {
+  const onSubmit = async () => {
     const pass = validate(state)
     if (!pass) {
       alert('invalid form')
@@ -243,7 +243,7 @@ function SecondForm() {
 
         <button 
           className={`${styles.next} w-24 h-9 rounded`}
-          onClick={onCreateClick}>
+          onClick={onSubmit}>
             <span className="text-lg font-semibold">Create</span>
         </button>
       </div>

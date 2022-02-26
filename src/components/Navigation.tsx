@@ -2,29 +2,35 @@ import {NextPage} from 'next'
 import {useRouter} from 'next/dist/client/router'
 import Link from 'next/link'
 import styled from 'styled-components'
+import useGlobal, {GlobalActionType, TableType} from '../hooks/useGlobal'
 import styles from '../styles/navigation.module.sass'
 
-const Navigation: NextPage = () => {
-  const router = useRouter()
-  const currentNavigation = getCurrentNavigation(router.pathname)
+function Navigation() {
+  const {state: {table}, dispatch} = useGlobal()
+  const onNavigate = (table: TableType) => {
+    dispatch({
+      type: GlobalActionType.SetTable,
+      payload: {table}
+    })
+  }
 
   return (
     <div className={styles.navigation}>
-      <Link href="/schedules/1" passHref>
+      <button onClick={() => onNavigate(TableType.Schedule)}>
         <LinkText 
-          active={currentNavigation === CurrentNavigationType.SchedulePage}
+          active={table === TableType.Schedule}
           className={styles.link}>
           Schedule
         </LinkText>
-      </Link>
+      </button>
 
-      <Link href="/schedules/1/availability" passHref>
+      <button onClick={() => onNavigate(TableType.Availability)}>
         <LinkText 
-          active={currentNavigation === CurrentNavigationType.AvailabilityPage}
+          active={table === TableType.Availability}
           className={styles.link}>
           Availability
         </LinkText>
-      </Link>
+      </button>
     </div>
   )
 }
@@ -41,21 +47,3 @@ const LinkText = styled.span<LinkTextProps>`
   color: #0496FF;
   ` : null}
 `
-
-enum CurrentNavigationType {
-  SchedulePage = 'SCHEDULE_PAGE',
-  AvailabilityPage = 'AVAILABILITY_PAGE',
-}
-
-function getCurrentNavigation(pathname: string) {
-  const str = pathname.split(/\//).slice(-1)[0]
-  switch (str) {
-    case '[id]':
-      return CurrentNavigationType.SchedulePage
-    
-    case 'availability':
-      return CurrentNavigationType.AvailabilityPage
-
-    default: return CurrentNavigationType.SchedulePage
-  }
-}

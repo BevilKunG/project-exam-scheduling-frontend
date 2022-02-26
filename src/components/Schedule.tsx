@@ -7,21 +7,28 @@ import {
   Room,
   Session
 } from '../graphql/generated'
-import useGlobal from '../hooks/useGlobal'
+import useGlobal, { GlobalState, TableType, ViewType } from '../hooks/useGlobal'
 import useSchedule from '../hooks/useSchedule'
 import styles from '../styles/schedule.module.sass'
 import {Droppable} from '../utils/dnd-dynamic'
-import committees from '../utils/mock-data/committees'
 import {CardStatusType} from './Card'
 
 interface ScheduleProps {
   schedule: GetScheduleQuery['schedule']
+  committees: GetScheduleQuery['committees']
 }
-function Schedule({schedule}: ScheduleProps) {
+function Schedule({
+  schedule,
+  committees,
+}: ScheduleProps) {
+  const props = {
+    schedule,
+    committees
+  }
   return (
     <div className={styles.schedule}>
-      <Header schedule={schedule} />
-      <Body schedule={schedule} />
+      <Header {...props} />
+      <Body {...props} />
     </div>
   )
 }
@@ -31,9 +38,14 @@ export default Schedule
 interface HeaderProps {
   schedule: GetScheduleQuery['schedule']
 }
-function Header({schedule}: HeaderProps) {
+function Header({
+  schedule,
+}: HeaderProps) {
+  const {state: {table}} = useGlobal()
   return (
-    <div className={styles.header}>
+    <HeaderContainer 
+      table={table}
+      className={styles.header}>
       {schedule.dates.map((date) => {
         const props = {
           date,
@@ -41,9 +53,21 @@ function Header({schedule}: HeaderProps) {
         }
         return <DateHeader key={date} {...props} />
       })}
-    </div>
+    </HeaderContainer>
   )
 }
+
+interface HeaderContainerProps {
+  table: TableType
+}
+const HeaderContainer = styled.div<HeaderContainerProps>`
+  background: ${({table}) => {
+    switch (table) {
+      case TableType.Schedule: return '#53DD6C'
+      case TableType.Availability: return '#0496FF'
+    }
+  }};
+`
 
 interface DateHeaderProps {
   date: string
@@ -53,22 +77,38 @@ function DateHeader({
   date,
   rooms,
 }: DateHeaderProps) {
+  const {state: {table}} = useGlobal()
   const day = DateTime.fromISO(date).toFormat('d')
   const dayOfWeek = DateTime.fromISO(date).toFormat('cccc')
-  return (
-    <div>
-      <div className="text-white text-center font-medium">
-        <h3 className="text-lg">{day}</h3>
-        <h3 className="text-sm">{dayOfWeek}</h3>
-      </div>
-
-      <div className="grid grid-flow-col">
-          {rooms.map((room) => {
-            return <RoomHeader key={room._id} room={room} />
-          })}
+  switch (table) {
+    case TableType.Schedule: 
+      return (
+        <div>
+          <div className="text-white text-center font-medium">
+            <h3 className="text-lg">{day}</h3>
+            <h3 className="text-sm">{dayOfWeek}</h3>
+          </div>
+    
+          <div className="grid grid-flow-col">
+            {rooms.map((room) => {
+              return <RoomHeader key={room._id} room={room} />
+            })}
+          </div>
         </div>
-    </div>
-  )
+      )
+  
+
+    case TableType.Availability: 
+      return (
+        <div>
+          <div className="w-48 text-white text-center font-medium">
+            <h3 className="text-lg">{day}</h3>
+            <h3 className="text-sm">{dayOfWeek}</h3>
+          </div>
+        </div>
+      )
+
+  }
 }
 
 interface RoomHeaderProps {
@@ -76,7 +116,7 @@ interface RoomHeaderProps {
 }
 function RoomHeader({room}: RoomHeaderProps) {
   return (
-    <div className="w-48 text-white text-center font-medium">
+    <div className={`${styles.room} text-white text-center font-medium`}>
       <h3 className="text-sm">{room.name}</h3>
     </div> 
   )
@@ -84,34 +124,41 @@ function RoomHeader({room}: RoomHeaderProps) {
 
 interface BodyProps {
   schedule: GetScheduleQuery['schedule']
+  committees: GetScheduleQuery['committees']
 }
-function Body({schedule}: BodyProps) {
+function Body({
+  schedule,
+  committees,
+}: BodyProps) {
   return (
     <div className={styles.body}>
-      <Time schedule={schedule} />
-      <Columns schedule={schedule} />
+      {/* {
+        (scheduleType === ScheduleType.Availability) && (
+          <Time sessions={schedule.sessions} />
+        )
+      } */}
+      <Columns {...{schedule, committees}} />
     </div>
   )
 }
 
 interface TimeProps {
-  schedule: GetScheduleQuery['schedule']
+  sessions: GetScheduleQuery['schedule']['sessions']
 }
-function Time({schedule}: TimeProps) {
-  const times = schedule
-    .sessions
+function Time({sessions}: TimeProps) {
+  const times = sessions
     .reduce((obj, session) => {
       obj[session.date] = obj[session.date] ? [...obj[session.date], session] : [session]
       return obj
-    }, {} as {[key: string]: Session[]})[schedule.sessions[0].date]
+    }, {} as {[key: string]: Session[]})[sessions[0].date]
     .map((session) => session.time.start)
 
   return (
     <div className={styles.time}>
       {times.map((time: string) => (
-        <div key={`time-${time}`} className="h-12 pt-1">
+        <div key={`time-${time}`} className={styles.item}>
           <h4
-            className="text-sm font-medium text-gray-800 text-center">
+            className="text-xs font-medium text-gray-800">
             {time}
           </h4>
         </div>
@@ -122,16 +169,43 @@ function Time({schedule}: TimeProps) {
 
 interface ColumnsProps {
   schedule: GetScheduleQuery['schedule']
+  committees: GetScheduleQuery['committees']
 }
-function Columns({schedule}: ColumnsProps) {
+function Columns({
+  schedule,
+  committees,
+}: ColumnsProps) {
+  const {state: {view}} = useGlobal()
+  const projects = ((schedule, view) => {
+    if (!view.itemId) return schedule.projects
+    switch (view.type) {
+      case ViewType.All: return schedule.projects
+      case ViewType.Committee: {
+        return schedule
+          .projects
+          .filter(({committees}) => committees.map(({_id}) => _id).includes(view.itemId as string))
+      }
+      case ViewType.Student: {
+        return schedule
+          .projects
+          .filter(({students}) => students.map(({_id}) => _id).includes(view.itemId as string))
+      }
+      case ViewType.Room: {
+        return schedule
+          .projects
+          .filter(({examination}) => examination?.room._id === view.itemId)
+      }
+    }
+  })(schedule, view)
   return (
     <div className={styles.columns}>
       {schedule.dates.map((date) => {
         const props = {
-          date,
           rooms: schedule.rooms,
           sessions: schedule.sessions.filter((session) => session.date === date),
-          projects: schedule.projects,
+          students: schedule.students,
+          projects,
+          committees,
         }
         return <DateColumn key={date} {...props} />
       })}
@@ -140,39 +214,50 @@ function Columns({schedule}: ColumnsProps) {
 }
 
 interface DateColumnProps {
-  date: string
   rooms: GetScheduleQuery['schedule']['rooms']
   sessions: GetScheduleQuery['schedule']['sessions']
   projects: GetScheduleQuery['schedule']['projects']
+  students: GetScheduleQuery['schedule']['students']
+  committees: GetScheduleQuery['committees']
 }
 function DateColumn({
-  date,
   rooms,
   sessions,
   projects,
+  students,
+  committees,
 }: DateColumnProps) {
-  // const day = DateTime.fromISO(date).toFormat('d')
-  // const dayOfWeek = DateTime.fromISO(date).toFormat('cccc')
-  return (
-    <>
-      {/* header */}
-      {/* <div className={`${styles.header} text-white text-center font-medium`}>
-        <h3 className="text-lg">{day}</h3>
-        <h3 className="text-sm">{dayOfWeek}</h3>
-      </div> */}
-      {/* rooms */}
-      <div className="grid grid-flow-col">
-        {rooms.map((room) => {
-          const props = {
-            room,
-            sessions,
-            projects,
-          }
-          return <RoomColumn key={room._id} {...props} />
-        })}
-      </div>  
-    </>
-  )
+  const {state: {table, view}} = useGlobal()
+
+  switch (table) {
+    case TableType.Schedule:
+      return (
+        <div className="grid grid-flow-col">
+          {rooms.map((room) => {
+            const props = {
+              room,
+              sessions,
+              projects,
+            }
+            return <RoomColumn key={room._id} {...props} />
+          })}
+        </div> 
+      )
+
+    case TableType.Availability: 
+      return (
+        <div className="grid grid-flow-col">
+          <div className="w-48">
+            {sessions.map((session) => (
+              <AvailabilitySlot 
+                key={session._id} 
+                {...{session, students, committees}} />
+              ))}
+          </div>
+        </div>
+      )
+    
+  }
 }
 
 interface RoomColumnProps {
@@ -186,12 +271,7 @@ function RoomColumn({
   projects,
 }: RoomColumnProps) {
   return (
-    <div className="w-48">
-      {/* header */}
-      {/* <div className={`${styles.header} text-white text-center font-medium`}>
-        <h3 className="text-sm">{room.name}</h3>
-      </div> */}
-      {/* sessions */}
+    <div className={styles.room}>
       {sessions.map((session) => <Slot key={session._id} {...{session, room, projects}}  />)}
     </div>
   )
@@ -207,8 +287,7 @@ function Slot({
   room,
   projects,
 }: SlotProps) {
-  const {state: globalState} = useGlobal()
-  const {isEditMode} = globalState
+  const {state: {editmode}} = useGlobal()
 
   const {state: scheduleState} = useSchedule()
   const {examinations} = scheduleState
@@ -242,17 +321,27 @@ function Slot({
       .map(({_id}) => _id)
       .includes(session._id)
 
-    if (!studentsJoined || !advisorJoined || !committeesEnough) return CardStatusType.Bad
-    if (availableCommitteeCount < project.committees.length) return CardStatusType.Good
+    // if (project._id === '6215737298365fd6fa0dfdda') console.log(project)
+    if (
+      !studentsJoined 
+      || !advisorJoined 
+      || !committeesEnough
+    ) {
+      return CardStatusType.Bad
+    }
+    if (availableCommitteeCount < project.committees.length) {
+      return CardStatusType.Good
+    } 
     return CardStatusType.Excellent
   }
   const status = calculateStatus(project, session)
+  const time = session.time.start
 
   const dragging =  projects.find((project) => project._id === scheduleState.dragging) as Project | null
     
   const dragingStatus = calculateStatus(dragging, session)
 
-  return isEditMode ? (
+  return editmode ? (
     <Droppable droppableId={`${session._id},${room._id}`}>
       {(provided) => {
         return (
@@ -262,7 +351,7 @@ function Slot({
             status={dragingStatus}
             className={styles.slot}>
             {provided.placeholder}
-            {project && <Card {...{project, status}} />}
+            {project && <Card {...{project, status, time}} />}
           </SlotContainer>
         )
       }}
@@ -285,4 +374,58 @@ const SlotContainer = styled.div<SlotContainerProps>`
       case CardStatusType.Bad: return '#FEC3C3'
     }
   }};
+`
+
+interface AvailabilitySlotProps {
+  session: Session
+  students: GetScheduleQuery['schedule']['students']
+  committees: GetScheduleQuery['committees']
+}
+function AvailabilitySlot({
+  session,
+  students,
+  committees,
+}: AvailabilitySlotProps) {
+  const {state} = useGlobal()
+  const {view} = state
+
+  const available = ((view: GlobalState['view']) => {
+    if (!view.itemId)
+      return false
+
+    switch (view.type) {
+      case ViewType.All: return false
+      case ViewType.Committee: {
+        const committee = committees.find(({_id}) => _id === view.itemId)
+        return committee ? 
+          committee.availability.sessions.map(({_id}) => _id).includes(session._id) 
+          : false
+      }
+      case ViewType.Student: {
+        const student = students.find(({_id}) => _id === view.itemId)
+        return student ? 
+          student.availability.sessions.map(({_id}) => _id).includes(session._id) 
+          : false
+      }
+      case ViewType.Room: return true
+    }
+  })(view)
+
+  return (
+    <AvailabilitySlotContainer 
+      available={available}
+      className={`${styles.availability} ${styles.slot}`}>
+        {available && (
+          <h4 className="text-xs text-white font-semibold">{`${session.time.start}-${session.time.end}`}</h4>
+        )}
+        
+    </AvailabilitySlotContainer>
+  )
+}
+
+interface AvailabilitySlotContainerProps {
+  available: boolean
+}
+const AvailabilitySlotContainer = styled.div<AvailabilitySlotContainerProps>`
+  ${({available}) => available && 'background: #53DD6C;'}
 `

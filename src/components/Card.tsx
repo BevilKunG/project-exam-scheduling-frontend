@@ -3,12 +3,11 @@ import styled from 'styled-components'
 import styles from '../styles/card.module.sass'
 import useModal, {ModalActionType} from '../hooks/useModal'
 import {Project, ProjectSubject} from '../graphql/generated'
-import { useEffect } from 'react'
-import useSchedule, { ScheduleActionType } from '../hooks/useSchedule'
 
 interface CardProps {
   project: Project
   status?: StatusType
+  time?: string
   draggable?: boolean
   index?: number
 }
@@ -21,17 +20,16 @@ enum StatusType {
 function Card({
   project,
   status=StatusType.Unscheduled,
+  time,
   draggable=true,
   index=0,
 }: CardProps) {
-  const {dispatch: dispatchSchedule} = useSchedule()
   const {dispatch: dispatchModal} = useModal()
 
-  const title =  project.title.length > 30 ? `${project.title.replace(/^(.{30}[^\s]*).*/, '$1')}...` : project.title
+  const title =  project.title.length > 10 ? project.title.replace(/^(.{10}[^\s]*).*/, '$1') : project.title
 
   function openInfo(project: Project) {
     // TODO: fix project on modal
-    return
     dispatchModal({
       type: ModalActionType.OpenInfo,
       payload: {info: project}
@@ -49,7 +47,9 @@ function Card({
               ref={provided.innerRef}
               {...{subject: project.subject, status}}
               className={styles.card}>
+              <h4 className={styles.time}>{time}</h4>
               <h4 className={styles.title}>{title}</h4>
+              
               <Status status={status} />
             </Container>
           )
@@ -62,7 +62,9 @@ function Card({
       className={styles.card}
       onClick={() => openInfo(project)}
       >
+      <h4 className={styles.time}>{project.examination?.session.time.start}</h4>
       <h4 className={styles.title}>{title}</h4>
+      
       <Status status={status} />
     </Container>
   )
@@ -103,8 +105,8 @@ const Status = styled.div<StatusProps>`
       case StatusType.Bad: return '#FC6464'
     }
   }};
-  width: 0.5rem;
-  height: 0.5rem;
+  width: 0.4rem;
+  height: 0.4rem;
   border-radius: 9999px;
   position: absolute;
   top: 0.25rem;

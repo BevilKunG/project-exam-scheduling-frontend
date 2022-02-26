@@ -1,7 +1,8 @@
 import {FontAwesomeIcon} from '@fortawesome/react-fontawesome'
-import {faShare} from '@fortawesome/free-solid-svg-icons'
+import {faShare, faRedoAlt, faDownload, faUpload, faSyncAlt, faTimes, faEyeSlash} from '@fortawesome/free-solid-svg-icons'
 import {DragDropContext} from '../../../utils/dnd-dynamic'
 import {useRouter} from 'next/router'
+import Image from 'next/image'
 import {useEffect} from 'react'
 import {
   Layout,
@@ -10,18 +11,19 @@ import {
   Menu,
 } from '../../../components'
 import styles from '../../../styles/SchedulePage.module.sass'
-import useGlobal, {GlobalActionType} from '../../../hooks/useGlobal'
+import useGlobal, {GlobalActionType, TableType, ViewType} from '../../../hooks/useGlobal'
 import {NextPage} from 'next'
 import {gql, useLazyQuery, useMutation} from '@apollo/client'
 import {
   GetScheduleQuery,
   GetScheduleQueryVariables,
+  MutationRefreshTeamupArgs,
   ScheduleStatus,
   UpdateExaminationsMutation,
   UpdateExaminationsMutationVariables,
 } from '../../../graphql/generated'
 import {DragStart, DropResult} from 'react-beautiful-dnd'
-import useSchedule, { ScheduleActionType } from '../../../hooks/useSchedule'
+import useSchedule, {ScheduleActionType} from '../../../hooks/useSchedule'
 
 const GET_SCHEDULE = gql`
   query GetSchedule($scheduleId: String!) {
@@ -30,6 +32,8 @@ const GET_SCHEDULE = gql`
       semester
       for
       dates
+      status
+      published
       projects {
         _id
         title
@@ -65,9 +69,16 @@ const GET_SCHEDULE = gql`
           _id
           session {
             _id
+            date
+            time {
+              start
+              end
+            }
           }
           room {
             _id
+            name
+            link
           }
         }
       }
@@ -82,12 +93,32 @@ const GET_SCHEDULE = gql`
       rooms {
         _id
         name
+        link
       }
-      status
+      students {
+        _id
+        studentId
+        availability {
+          sessions {
+            _id
+          }
+        }
+      }
+    }
+    committees {
+        _id
+        name
+        availability(scheduleId: $scheduleId) {
+          sessions {
+            _id
+          }
+        }
+    }
+    me {
+      _id
     }
   }
 `
-
 const UPDATE_EXAMINATIONS = gql`
   mutation UpdateExaminations($args: UpdateExaminationsInput!) {
     updateExaminations(args: $args) {
@@ -101,6 +132,26 @@ const UPDATE_EXAMINATIONS = gql`
       room {
         _id
       }
+    }
+  }
+`
+const RESFRESH_TEAMUP = gql`
+  mutation RefreshTeamup($scheduleId: String!) {
+    refreshTeamup(scheduleId: $scheduleId) {
+      _id
+    }
+  }
+`
+const RE_SCHEDULING = gql`
+  mutation ReScheduling($scheduleId: String!) {
+    scheduling(scheduleId: $scheduleId)
+  }
+`
+const UPDATE_SCHEDULE_PUBLISHED = gql`
+  mutation UpdateSchedulePublished($args: UpdateSchedulePublishedInput!) {
+    updateSchedulePublished(args: $args) {
+      _id
+      published
     }
   }
 `
@@ -144,14 +195,15 @@ const SchedulePage: NextPage = () => {
   }
 
   if (error) {
-    return <h1>error</h1>
-  }
-
-  if (!data.schedule) {
+    console.log(error)
     return <></>
   }
 
-  const {schedule} = data
+  if (!data.schedule || !data.committees) {
+    return <></>
+  }
+
+  const {schedule, committees} = data
   if (schedule.status !== ScheduleStatus.Ready) {
     return <WaitingPage />
   }
@@ -212,19 +264,19 @@ const SchedulePage: NextPage = () => {
           onDragStart={onDragStart}
           onDragEnd={onDragEnd}>
           <div className={styles.container}>
-            <Menu schedule={schedule} />
+            <Menu {...{schedule, committees}} />
 
             <div>
-              <div className="flex flex-row justify-between align-center ml-16 mb-4">
+              <div className="flex flex-row justify-between align-center mb-4">
                 <h1 className="text-2xl text-gray-700 font-semibold">{title}</h1>
-                <PublishButton />
+                {data.me && <TopButtons schedule={schedule} />}
               </div>
 
-              <Schedule schedule={schedule}/>
+              <Schedule {...{schedule, committees}}/>
             </div>
           </div>
         </DragDropContext>
-        <Bottom {...{schedule}}/>
+        {data.me && <BottomButtons {...{schedule}}/>}
       </div>
     </Layout>
   )
@@ -232,29 +284,129 @@ const SchedulePage: NextPage = () => {
 
 export default SchedulePage
 
-function PublishButton() {
-  const onPublish = () => {
-    console.log('publish')
-  }
-  return (
-    <button
-      onClick={onPublish}
-      className={`${styles.publish} shadow-md`}>
-      <FontAwesomeIcon icon={faShare} size="lg" />
-      <span className="ml-1">Publish</span>
-    </button>
-  )
-}
-
-interface BottomProps {
+interface TopButtonsProps {
   schedule: GetScheduleQuery['schedule']
 }
-function Bottom({
-  schedule,
-}: BottomProps) {
+function TopButtons({schedule}: TopButtonsProps) {
   const router = useRouter()
-  const {state: globalState, dispatch: dispatchGlobal} = useGlobal()
-  const {isEditMode} = globalState
+
+  const {state: {editmode, table, view}} = useGlobal()
+  // split components
+  const [refreshTeamup, {
+    loading: loadingTeamup, 
+    error: errorTeamup,
+  }] = useMutation<MutationRefreshTeamupArgs>(RESFRESH_TEAMUP)
+
+  const [rescheduling, {
+    loading: loadingScheduling,
+    error: errorScheduling,
+  }] = useMutation(RE_SCHEDULING)
+
+  const [updatePublished, {
+    loading: loadingPublished,
+    error: errorPublished,
+  }] = useMutation(UPDATE_SCHEDULE_PUBLISHED)
+
+  if (loadingTeamup || loadingScheduling || loadingPublished) return <></>
+  if (errorTeamup || errorScheduling || errorPublished) return <></>
+
+  const onRefreshTeamup = () => {
+    refreshTeamup({
+      variables: {scheduleId: schedule._id},
+      update(cache) {
+        // update cache
+        cache.reset()
+      }
+    })
+  }
+  
+  const onEdit = () => {
+    router.push(`/schedules/${schedule._id}/edit`)
+  }
+
+  const onReScheduling = () => {
+    rescheduling({
+      variables: {scheduleId: schedule._id},
+      update(cache) {
+        // update cache
+        cache.reset()
+      },
+      onCompleted() {
+        router.reload()
+      }
+    })
+  }
+
+  const onPublish = (published: boolean) => {
+    updatePublished({
+      variables: {
+        args: {
+          scheduleId: schedule._id,
+          published,
+        }
+      },
+      update(cache) {
+        cache.reset()
+      }
+    })
+  }
+
+
+  switch (table) {
+    case TableType.Schedule: {
+      return !editmode ? (
+        schedule.published ? (
+          <button
+            onClick={() => onPublish(false)}
+            className={`${styles.unpublish} shadow-md`}>
+            <FontAwesomeIcon icon={faEyeSlash} size="lg" />
+            <span className="ml-1">Unpublish</span>
+          </button>
+        ) : (
+          <button
+            onClick={() => onPublish(true)}
+            className={`${styles.publish} shadow-md`}>
+            <FontAwesomeIcon icon={faShare} size="lg" />
+            <span className="ml-1">Publish</span>
+          </button>
+        )
+      ) : (
+        <button
+          onClick={onReScheduling}
+          className={`${styles.scheduling} shadow-md`}>
+          <FontAwesomeIcon icon={faRedoAlt} size="lg" />
+          <span className="ml-1">Re-Scheduling</span>
+        </button>
+      )
+    }
+
+    case TableType.Availability: {
+      return view.type === ViewType.Committee ? (
+        <button
+          onClick={onRefreshTeamup}
+          className={`${styles.refresh} shadow-md`}>
+          <FontAwesomeIcon icon={faSyncAlt} size="lg" />
+          <span className="ml-1">Refresh</span>
+        </button>
+      ) : (
+        <button
+          onClick={onEdit}
+          className={`${styles.setting} shadow-md`}>
+          <span className="ml-1">Edit</span>
+        </button>
+      )
+    }
+  }
+}
+
+interface BottomButtonsProps {
+  schedule: GetScheduleQuery['schedule']
+}
+function BottomButtons({
+  schedule,
+}: BottomButtonsProps) {
+  const router = useRouter()
+  const {state: {editmode, table}, dispatch: dispatchGlobal} = useGlobal()
 
   const {state: scheduleState, dispatch: dispatchSchedule} = useSchedule()
   const {original, examinations} = scheduleState
@@ -296,7 +448,7 @@ function Bottom({
       type: ScheduleActionType.SetExaminations,
       payload: {examinations: original}
     })
-    dispatchGlobal({type: GlobalActionType.EditModeOff})
+    dispatchGlobal({type: GlobalActionType.TurnEditModeOff})
   }
 
   const onSave = () => {
@@ -314,51 +466,79 @@ function Bottom({
       }
     })
   }
-  
-  return (
-    <div className={styles.bottom}>
-      <div className="flex flex-row justify-end align-center pt-6">
-        {
-          !isEditMode ? (
-            <button 
-              className={`${styles.edit} shadow-md`}
-              onClick={() => dispatchGlobal({type: GlobalActionType.EditModeOn})}>
-                Edit
-            </button>
-          ) : (
-          !changed ? (
-            <button 
-              className={`${styles.cancel} shadow-md`}
-              onClick={() => dispatchGlobal({type: GlobalActionType.EditModeOff})}>
-                Back
-            </button>
-          ): (
-            <>
-              <button 
-                className={`${styles.cancel} mr-10`}
-                onClick={onCancel}>
-                  Cancel
-              </button>
 
-              <button 
-                className={`${styles.save} shadow-md`}
-                onClick={onSave}>
-                  Save
-              </button>
-            </>
-            )
-          )
-        }
-      </div>
-    </div>
-  )
+  switch (table) {
+    case TableType.Schedule: {
+      return (
+        <div className={styles.bottom}>
+          <div className="flex flex-row justify-end align-center pt-6">
+            {
+              !editmode ? (
+                <button 
+                  className={`${styles.edit} shadow-md`}
+                  onClick={() => dispatchGlobal({type: GlobalActionType.TurnEditModeOn})}>
+                    Edit
+                </button>
+              ) : (
+              !changed ? (
+                <button 
+                  className={`${styles.cancel} shadow-md`}
+                  onClick={() => dispatchGlobal({type: GlobalActionType.TurnEditModeOff})}>
+                    Back
+                </button>
+              ): (
+                <>
+                  <button 
+                    className={`${styles.cancel} mr-10`}
+                    onClick={onCancel}>
+                      Cancel
+                  </button>
+    
+                  <button 
+                    className={`${styles.save} shadow-md`}
+                    onClick={onSave}>
+                      Save
+                  </button>
+                </>
+                )
+              )
+            }
+          </div>
+        </div>
+      )
+    }
+
+    case TableType.Availability: return <div className={styles.bottom} />
+  }
 }
 
 function WaitingPage() {
+  const router = useRouter()
+  const onRefresh = () => {
+    router.reload()
+  }
+
   return (
     <Layout>
-      <h1>waiting...</h1>
-      <button>refresh</button>
+      <div className={styles.waiting}>
+        <div>
+          <Image 
+            src="/waiting.svg"
+            alt="waiting" 
+            width={500}
+            height={250}/>
+
+          <div className="text-center mt-6">
+            <h1 className="text-xl text-gray-700 font-semibold">Please wait for scheduling</h1>
+            <button
+              onClick={onRefresh}
+              className={styles.refresh}>
+              <FontAwesomeIcon icon={faRedoAlt} />
+              <span className="text-base font-medium ml-1">refresh</span>
+            </button>
+          </div>
+        </div>
+      </div>
     </Layout>
   )
 }

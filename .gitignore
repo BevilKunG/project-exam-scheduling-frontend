@@ -50,3 +50,5 @@ yarn-error.log*
 
 # infomation examples
 /src/utils/examples
+# Local Netlify folder
+.netlify

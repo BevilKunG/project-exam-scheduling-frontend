@@ -8,8 +8,17 @@ import {
 } from 'react'
 
 type GlobalState = {
-  isEditMode: boolean
-  view: ViewType
+  editmode: boolean
+  table: TableType
+  view: {
+    type: ViewType
+    itemId: string | null
+  }
+}
+
+enum TableType {
+  Schedule = 'SCHEDULE',
+  Availability = 'AVAILABILITY'
 }
 
 enum ViewType {
@@ -20,8 +29,12 @@ enum ViewType {
 }
 
 const initialState: GlobalState = {
-  isEditMode: false,
-  view: ViewType.All
+  editmode: false,
+  table: TableType.Schedule,
+  view: {
+    type: ViewType.All,
+    itemId: null,
+  }
 }
 
 const useGlobal = () => useContext(GlobalContext)
@@ -30,20 +43,27 @@ export default useGlobal
 export {
   GlobalProvider,
   ActionType as GlobalActionType,
+  TableType,
   ViewType,
 }
+export type {GlobalState}
 
 
 type GlobalAction = {
   type: ActionType
   payload?: Partial<{
-    view: ViewType
+    table: TableType
+    view: {
+      type: ViewType
+      itemId: string | null
+    }
   }>
 }
 
 enum ActionType {
-  EditModeOn = 'EDIT_MODE_ON',
-  EditModeOff = 'EDIT_MODE_OFF',
+  TurnEditModeOn = 'TURN_EDIT_MODE_ON',
+  TurnEditModeOff = 'TURN_EDIT_MODE_OFF',
+  SetTable = 'SET_TABLE',
   SetView = 'SET_VIEW'
 }
 
@@ -68,14 +88,29 @@ const GlobalProvider: FC = ({children}) => {
 
 const reducer: Reducer<GlobalState, GlobalAction> = (state, action) => {
   switch (action.type) {
-    case ActionType.EditModeOn: 
-      return {...state, isEditMode: true}
+    case ActionType.TurnEditModeOn: 
+      return {...state, editmode: true}
     
-    case ActionType.EditModeOff:
-      return {...state, isEditMode: false}
+    case ActionType.TurnEditModeOff:
+      return {...state, editmode: false}
+
+    case ActionType.SetTable: {
+      if (action.payload?.table === undefined) {
+        return state
+      }
+      const view = action.payload.table === state.table ? state.view : initialState.view 
+      const editmode = action.payload.table === TableType.Availability ? false : state.editmode
+      return {
+        ...state,
+        table: action.payload.table,
+        view,
+        editmode,
+      }
+    }
+
       
     case ActionType.SetView: {
-      if (!action.payload?.view) {
+      if (action.payload?.view === undefined) {
         return state
       }
       return {...state, view: action.payload.view}
