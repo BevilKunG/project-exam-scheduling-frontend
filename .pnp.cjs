@@ -36,7 +36,8 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
           "packageLocation": "./",
           "packageDependencies": [
             ["@apollo/client", "virtual:fb898ce7ef5bcfd217c7d7dca524304ef9b62398b791703ff5fa816f99be43318cb296ba2b6849088e316bb53ae5f832d84766f4377d8b1ced9afdc5b7be9040#npm:3.5.8"],
-            ["@fortawesome/fontawesome-svg-core", "npm:1.3.0"],
+            ["@fortawesome/fontawesome-common-types", "npm:0.2.36"],
+            ["@fortawesome/fontawesome-svg-core", "npm:1.2.36"],
             ["@fortawesome/free-solid-svg-icons", "npm:5.15.4"],
             ["@fortawesome/react-fontawesome", "virtual:fb898ce7ef5bcfd217c7d7dca524304ef9b62398b791703ff5fa816f99be43318cb296ba2b6849088e316bb53ae5f832d84766f4377d8b1ced9afdc5b7be9040#npm:0.1.17"],
             ["@graphql-codegen/cli", "virtual:fb898ce7ef5bcfd217c7d7dca524304ef9b62398b791703ff5fa816f99be43318cb296ba2b6849088e316bb53ae5f832d84766f4377d8b1ced9afdc5b7be9040#npm:2.6.1"],
@@ -1258,21 +1259,14 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
             ["@fortawesome/fontawesome-common-types", "npm:0.2.36"]
           ],
           "linkType": "HARD",
-        }],
-        ["npm:0.3.0", {
-          "packageLocation": "./.yarn/unplugged/@fortawesome-fontawesome-common-types-npm-0.3.0-6e529e8bc7/node_modules/@fortawesome/fontawesome-common-types/",
-          "packageDependencies": [
-            ["@fortawesome/fontawesome-common-types", "npm:0.3.0"]
-          ],
-          "linkType": "HARD",
         }]
       ]],
       ["@fortawesome/fontawesome-svg-core", [
-        ["npm:1.3.0", {
-          "packageLocation": "./.yarn/unplugged/@fortawesome-fontawesome-svg-core-npm-1.3.0-579cce7bf9/node_modules/@fortawesome/fontawesome-svg-core/",
+        ["npm:1.2.36", {
+          "packageLocation": "./.yarn/unplugged/@fortawesome-fontawesome-svg-core-npm-1.2.36-a7e9aa4045/node_modules/@fortawesome/fontawesome-svg-core/",
           "packageDependencies": [
-            ["@fortawesome/fontawesome-svg-core", "npm:1.3.0"],
-            ["@fortawesome/fontawesome-common-types", "npm:0.3.0"]
+            ["@fortawesome/fontawesome-svg-core", "npm:1.2.36"],
+            ["@fortawesome/fontawesome-common-types", "npm:0.2.36"]
           ],
           "linkType": "HARD",
         }]
@@ -1299,7 +1293,7 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
           "packageLocation": "./.yarn/__virtual__/@fortawesome-react-fontawesome-virtual-b59d81164c/0/cache/@fortawesome-react-fontawesome-npm-0.1.17-4e46858d39-a95a9ef178.zip/node_modules/@fortawesome/react-fontawesome/",
           "packageDependencies": [
             ["@fortawesome/react-fontawesome", "virtual:fb898ce7ef5bcfd217c7d7dca524304ef9b62398b791703ff5fa816f99be43318cb296ba2b6849088e316bb53ae5f832d84766f4377d8b1ced9afdc5b7be9040#npm:0.1.17"],
-            ["@fortawesome/fontawesome-svg-core", "npm:1.3.0"],
+            ["@fortawesome/fontawesome-svg-core", "npm:1.2.36"],
             ["@types/fortawesome__fontawesome-svg-core", null],
             ["@types/react", "npm:17.0.36"],
             ["prop-types", "npm:15.8.1"],
@@ -9004,7 +8998,8 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
           "packageDependencies": [
             ["project-exam-scheduling", "workspace:."],
             ["@apollo/client", "virtual:fb898ce7ef5bcfd217c7d7dca524304ef9b62398b791703ff5fa816f99be43318cb296ba2b6849088e316bb53ae5f832d84766f4377d8b1ced9afdc5b7be9040#npm:3.5.8"],
-            ["@fortawesome/fontawesome-svg-core", "npm:1.3.0"],
+            ["@fortawesome/fontawesome-common-types", "npm:0.2.36"],
+            ["@fortawesome/fontawesome-svg-core", "npm:1.2.36"],
             ["@fortawesome/free-solid-svg-icons", "npm:5.15.4"],
             ["@fortawesome/react-fontawesome", "virtual:fb898ce7ef5bcfd217c7d7dca524304ef9b62398b791703ff5fa816f99be43318cb296ba2b6849088e316bb53ae5f832d84766f4377d8b1ced9afdc5b7be9040#npm:0.1.17"],
             ["@graphql-codegen/cli", "virtual:fb898ce7ef5bcfd217c7d7dca524304ef9b62398b791703ff5fa816f99be43318cb296ba2b6849088e316bb53ae5f832d84766f4377d8b1ced9afdc5b7be9040#npm:2.6.1"],

@@ -11,9 +11,10 @@
   },
   "dependencies": {
     "@apollo/client": "^3.5.8",
-    "@fortawesome/fontawesome-svg-core": "^1.2.36",
-    "@fortawesome/free-solid-svg-icons": "^5.15.4",
-    "@fortawesome/react-fontawesome": "^0.1.16",
+    "@fortawesome/fontawesome-common-types": "0.2.36",
+    "@fortawesome/fontawesome-svg-core": "1.2.36",
+    "@fortawesome/free-solid-svg-icons": "5.15.4",
+    "@fortawesome/react-fontawesome": "0.1.17",
     "@graphql-codegen/cli": "^2.6.1",
     "@graphql-codegen/typescript": "^2.4.3",
     "@graphql-codegen/typescript-operations": "^2.3.0",
