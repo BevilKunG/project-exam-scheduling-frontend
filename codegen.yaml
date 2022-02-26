@@ -1,4 +1,4 @@
-schema: http://localhost:4000/graphql
+schema: ${NODE_URI}/graphql
 documents: './src/**/*.tsx'
 generates:
   ./src/graphql/generated.ts:

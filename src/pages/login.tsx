@@ -1,6 +1,6 @@
 import {gql, useMutation, useQuery} from '@apollo/client'
 import { useRouter } from 'next/router'
-import {useEffect, useState} from 'react'
+import {useState} from 'react'
 import {Layout} from '../components'
 import { GetMeQuery, GetMeQueryVariables } from '../graphql/generated'
 import styles from '../styles/LoginPage.module.sass'
@@ -44,7 +44,7 @@ function LoginPage() {
       },
       onCompleted: (data) => {
         const {login: {token}} = data
-        localStorage.setItem('project-exam-scheduling-token', token)
+        localStorage.setItem(process.env.NEXT_PUBLIC_TOKEN_KEY as string, token)
         router.replace('/schedules')
       }
     })

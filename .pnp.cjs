@@ -51,6 +51,7 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
             ["@types/styled-components", "npm:5.1.22"],
             ["autoprefixer", "virtual:fb898ce7ef5bcfd217c7d7dca524304ef9b62398b791703ff5fa816f99be43318cb296ba2b6849088e316bb53ae5f832d84766f4377d8b1ced9afdc5b7be9040#npm:10.4.2"],
             ["axios", "npm:0.26.0"],
+            ["dotenv", "npm:16.0.0"],
             ["eslint", "npm:7.32.0"],
             ["eslint-config-next", "virtual:fb898ce7ef5bcfd217c7d7dca524304ef9b62398b791703ff5fa816f99be43318cb296ba2b6849088e316bb53ae5f832d84766f4377d8b1ced9afdc5b7be9040#npm:12.0.4"],
             ["graphql", "npm:16.3.0"],
@@ -4917,6 +4918,13 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
             ["dotenv", "npm:10.0.0"]
           ],
           "linkType": "HARD",
+        }],
+        ["npm:16.0.0", {
+          "packageLocation": "./.yarn/cache/dotenv-npm-16.0.0-ef4a5ccded-664cebb51f.zip/node_modules/dotenv/",
+          "packageDependencies": [
+            ["dotenv", "npm:16.0.0"]
+          ],
+          "linkType": "HARD",
         }]
       ]],
       ["dset", [
@@ -9011,6 +9019,7 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
             ["@types/styled-components", "npm:5.1.22"],
             ["autoprefixer", "virtual:fb898ce7ef5bcfd217c7d7dca524304ef9b62398b791703ff5fa816f99be43318cb296ba2b6849088e316bb53ae5f832d84766f4377d8b1ced9afdc5b7be9040#npm:10.4.2"],
             ["axios", "npm:0.26.0"],
+            ["dotenv", "npm:16.0.0"],
             ["eslint", "npm:7.32.0"],
             ["eslint-config-next", "virtual:fb898ce7ef5bcfd217c7d7dca524304ef9b62398b791703ff5fa816f99be43318cb296ba2b6849088e316bb53ae5f832d84766f4377d8b1ced9afdc5b7be9040#npm:12.0.4"],
             ["graphql", "npm:16.3.0"],

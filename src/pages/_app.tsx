@@ -14,11 +14,11 @@ import {
 import {setContext} from '@apollo/client/link/context'
 
 const httpLink = createHttpLink({
-  uri: 'http://localhost:4000'
+  uri: process.env.NEXT_PUBLIC_NODE_URI
 })
 
 const authLink = setContext((_, {headers}) => {
-  const token = localStorage.getItem('project-exam-scheduling-token')
+  const token = localStorage.getItem(process.env.NEXT_PUBLIC_TOKEN_KEY as string)
   return {
     headers: {
       ...headers,
@@ -28,7 +28,6 @@ const authLink = setContext((_, {headers}) => {
 })
 
 const client = new ApolloClient({
-  // uri: 'http://localhost:4000',
   link: authLink.concat(httpLink),
   cache: new InMemoryCache()
 })

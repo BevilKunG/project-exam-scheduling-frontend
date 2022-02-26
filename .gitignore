@@ -25,6 +25,7 @@ yarn-debug.log*
 yarn-error.log*
 
 # local env files
+.env
 .env.local
 .env.development.local
 .env.test.local
@@ -50,5 +51,3 @@ yarn-error.log*
 
 # infomation examples
 /src/utils/examples
-# Local Netlify folder
-.netlify
