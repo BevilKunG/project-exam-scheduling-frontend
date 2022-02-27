@@ -143,6 +143,8 @@ function SecondaryMenu({
       }
     })
   }
+
+  if (view.type === ViewType.All) return <></>
   
   return (
     <div className={`${styles.secondary} ${styles.menu}`}>
