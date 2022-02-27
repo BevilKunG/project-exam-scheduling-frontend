@@ -190,9 +190,7 @@ const SchedulePage: NextPage = () => {
     return <></>
   }
 
-  if (loading) {
-    return <h1>loading...</h1>
-  }
+  if (loading) return <></>
 
   if (error) {
     console.log(error)
@@ -389,11 +387,12 @@ function TopButtons({schedule}: TopButtonsProps) {
           <span className="ml-1">Refresh</span>
         </button>
       ) : (
-        <button
-          onClick={onEdit}
-          className={`${styles.setting} shadow-md`}>
-          <span className="ml-1">Edit</span>
-        </button>
+        <></>
+        // <button
+        //   onClick={onEdit}
+        //   className={`${styles.setting} shadow-md`}>
+        //   <span className="ml-1">Edit</span>
+        // </button>
       )
     }
   }
