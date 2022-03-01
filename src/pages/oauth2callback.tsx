@@ -71,11 +71,10 @@ function OAuth2CallbackPage() {
         const room = project.examination.room
         return {
           summary: project.title,
-          attendees: [],
-          // attendees: project
-          //   .committees
-          //   .filter((committee: any) => committee.email)
-          //   .map((committee: any) => committee.email),
+          attendees: project
+            .committees
+            .filter((committee) => committee.email)
+            .map((committee) => committee.email),
           start,
           end,
           description: `${room.name}${room.link ? `: ${room.link}` : ''}`
@@ -87,7 +86,7 @@ function OAuth2CallbackPage() {
         variables: {
           args: {
             code,
-            events: events.slice(0, 3)
+            events,
           }
         },
         onCompleted: () => {
