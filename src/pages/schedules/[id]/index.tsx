@@ -13,7 +13,7 @@ import {
 import styles from '../../../styles/SchedulePage.module.sass'
 import useGlobal, {GlobalActionType, TableType, ViewType} from '../../../hooks/useGlobal'
 import {NextPage} from 'next'
-import {gql, useLazyQuery, useMutation} from '@apollo/client'
+import {gql, useLazyQuery, useMutation, useQuery} from '@apollo/client'
 import {
   GetScheduleQuery,
   GetScheduleQueryVariables,
@@ -156,6 +156,12 @@ const UPDATE_SCHEDULE_PUBLISHED = gql`
   }
 `
 
+const GET_GOOGLE_AUTH_URL = gql`
+  query GetGoogleAuthUrl($scheduleId: String!) {
+    googleAuthUrl(scheduleId: $scheduleId)
+  }
+`
+
 const SchedulePage: NextPage = () => {
   const router = useRouter()
   const {id: scheduleId} = router.query
@@ -187,18 +193,18 @@ const SchedulePage: NextPage = () => {
 
   // handle query result
   if (!scheduleId || !data) {
-    return <></>
+    return <Layout></Layout>
   }
 
-  if (loading) return <></>
+  if (loading) return <Layout></Layout>
 
   if (error) {
     console.log(error)
-    return <></>
+    return <Layout></Layout>
   }
 
   if (!data.schedule || !data.committees) {
-    return <></>
+    return <Layout></Layout>
   }
 
   const {schedule, committees} = data
@@ -290,6 +296,16 @@ function TopButtons({schedule}: TopButtonsProps) {
 
   const {state: {editmode, table, view}} = useGlobal()
   // split components
+  const {
+    loading: googleAuthLoading,
+    error: googleAuthError,
+    data: googleAuthData,
+  } = useQuery(GET_GOOGLE_AUTH_URL, {
+    variables: {
+      scheduleId: schedule._id
+    }
+  })
+
   const [refreshTeamup, {
     loading: loadingTeamup, 
     error: errorTeamup,
@@ -305,8 +321,8 @@ function TopButtons({schedule}: TopButtonsProps) {
     error: errorPublished,
   }] = useMutation(UPDATE_SCHEDULE_PUBLISHED)
 
-  if (loadingTeamup || loadingScheduling || loadingPublished) return <></>
-  if (errorTeamup || errorScheduling || errorPublished) return <></>
+  if (loadingTeamup || loadingScheduling || loadingPublished || googleAuthLoading) return <></>
+  if (errorTeamup || errorScheduling || errorPublished || googleAuthError) return <></>
 
   const onRefreshTeamup = () => {
     refreshTeamup({
@@ -349,24 +365,44 @@ function TopButtons({schedule}: TopButtonsProps) {
     })
   }
 
+  const onPushCalendar = () => {
+    const {googleAuthUrl} = googleAuthData
+    router.push(googleAuthUrl)
+  }
+
 
   switch (table) {
     case TableType.Schedule: {
       return !editmode ? (
         schedule.published ? (
-          <button
-            onClick={() => onPublish(false)}
-            className={`${styles.unpublish} shadow-md`}>
-            <FontAwesomeIcon icon={faEyeSlash} size="lg" />
-            <span className="ml-1">Unpublish</span>
-          </button>
+          <div>
+            <button
+              onClick={onPushCalendar}
+              className={`${styles.publish} shadow-md mr-4`}>
+              Push Calendar
+            </button>
+            <button
+              onClick={() => onPublish(false)}
+              className={`${styles.unpublish} shadow-md`}>
+              <FontAwesomeIcon icon={faEyeSlash} size="lg" />
+              <span className="ml-1">Unpublish</span>
+            </button>
+          </div>
         ) : (
-          <button
-            onClick={() => onPublish(true)}
-            className={`${styles.publish} shadow-md`}>
-            <FontAwesomeIcon icon={faShare} size="lg" />
-            <span className="ml-1">Publish</span>
-          </button>
+          <div>
+            <button
+              onClick={onPushCalendar}
+              className={`${styles.publish} shadow-md mr-4`}>
+              Push Calendar
+            </button>
+
+            <button
+              onClick={() => onPublish(true)}
+              className={`${styles.publish} shadow-md`}>
+              <FontAwesomeIcon icon={faShare} size="lg" />
+              <span className="ml-1">Publish</span>
+            </button>
+          </div>
         )
       ) : (
         <button
