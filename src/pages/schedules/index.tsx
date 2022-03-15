@@ -1,11 +1,12 @@
 import {gql, useQuery} from '@apollo/client'
 import {faPlus} from '@fortawesome/free-solid-svg-icons'
 import {FontAwesomeIcon} from '@fortawesome/react-fontawesome'
-import { DateTime } from 'luxon'
+import {DateTime} from 'luxon'
 import {NextPage} from 'next'
-import { useRouter } from 'next/router'
+import Error from 'next/error'
+import {useRouter} from 'next/router'
 import {Layout} from '../../components'
-import { GetSchedulesQuery, GetSchedulesQueryVariables, Schedule, ScheduleFor } from '../../graphql/generated'
+import {GetSchedulesQuery, GetSchedulesQueryVariables, Schedule} from '../../graphql/generated'
 import styles from '../../styles/ScheduleListPage.module.sass'
 
 const GET_SCHEDULES = gql`
@@ -27,7 +28,7 @@ const ScheduleListPage: NextPage = () => {
   const {loading, error, data} = useQuery<GetSchedulesQuery & {me: any}, GetSchedulesQueryVariables>(GET_SCHEDULES)
 
   if (loading) return <></>
-  if (error) return <></>
+  if (error) return <Error statusCode={500} title={error.message} />
   if (!data) return <></>
 
   const {schedules} = data

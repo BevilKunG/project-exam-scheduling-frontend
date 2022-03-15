@@ -1,5 +1,6 @@
 import {gql, useLazyQuery, useMutation} from '@apollo/client'
 import {useRouter} from 'next/router'
+import Error from 'next/error'
 import {useEffect} from 'react'
 import {
   GetScheduleEventsQuery,
@@ -97,7 +98,8 @@ function OAuth2CallbackPage() {
   }, [data, code, createGoogleEvents, router, scheduleId])
 
   if (loading || createEventsLoading) return <></>
-  if (error || createEventsError) return <></>
+  if (error) return <Error statusCode={500} title={error.message} />
+  if (createEventsError) return <Error statusCode={500} title={createEventsError.message} />
 
   return <div>callback</div>
 }

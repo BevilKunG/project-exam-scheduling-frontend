@@ -1,8 +1,9 @@
 import {FontAwesomeIcon} from '@fortawesome/react-fontawesome'
 import {faShare, faRedoAlt, faDownload, faUpload, faSyncAlt, faTimes, faEyeSlash} from '@fortawesome/free-solid-svg-icons'
 import {DragDropContext} from '../../../utils/dnd-dynamic'
-import {useRouter} from 'next/router'
+import Error from 'next/error'
 import Image from 'next/image'
+import {useRouter} from 'next/router'
 import {useEffect} from 'react'
 import {
   Layout,
@@ -199,8 +200,7 @@ const SchedulePage: NextPage = () => {
   if (loading) return <Layout></Layout>
 
   if (error) {
-    console.log(error)
-    return <Layout></Layout>
+    return <Error statusCode={500} title={error.message} />
   }
 
   if (!data.schedule || !data.committees) {

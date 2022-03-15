@@ -1,8 +1,9 @@
 import {gql, useMutation, useQuery} from '@apollo/client'
-import { useRouter } from 'next/router'
+import {useRouter} from 'next/router'
+import Error from 'next/error'
 import {useState} from 'react'
 import {Layout} from '../components'
-import { GetMeQuery, GetMeQueryVariables } from '../graphql/generated'
+import {GetMeQuery, GetMeQueryVariables} from '../graphql/generated'
 import styles from '../styles/LoginPage.module.sass'
 
 const LOGIN = gql`
@@ -31,7 +32,8 @@ function LoginPage() {
   const [login, {loading: loadingLogin, error: errorLogin}] = useMutation(LOGIN)
 
   if (loadingMe || loadingLogin) return <></>
-  if (errorMe || errorLogin) return <></>
+  if (errorMe) return <Error statusCode={500} title={errorMe.message} />
+  if (errorLogin) return <Error statusCode={500} title={errorLogin.message} />
 
   if (data?.me) {
     router.replace('/schedules')
