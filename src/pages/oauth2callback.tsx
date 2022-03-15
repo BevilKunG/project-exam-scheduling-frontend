@@ -6,6 +6,8 @@ import {
   GetScheduleEventsQuery,
   GetScheduleEventsQueryVariables,
 } from '../graphql/generated'
+import {Layout} from '../components'
+import ReactLoading from 'react-loading'
 
 const GET_SCHEDULE_EVENTS = gql`
   query GetScheduleEvents($scheduleId: String!) {
@@ -97,11 +99,24 @@ function OAuth2CallbackPage() {
     }
   }, [data, code, createGoogleEvents, router, scheduleId])
 
-  if (loading || createEventsLoading) return <></>
+  if (loading || createEventsLoading) return <LoadingPage />
   if (error) return <Error statusCode={500} title={error.message} />
   if (createEventsError) return <Error statusCode={500} title={createEventsError.message} />
 
-  return <div>callback</div>
+  return <Layout></Layout>
 }
 
 export default OAuth2CallbackPage
+
+function LoadingPage() {
+  return (
+    <Layout>
+      <ReactLoading 
+        type="spin"
+        width={64}
+        height={64}
+        color="#8D8D8D"
+        className="absolute top-1/2 left-1/2"/>
+    </Layout>
+  )
+}

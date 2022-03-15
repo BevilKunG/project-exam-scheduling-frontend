@@ -1,13 +1,15 @@
-import {gql, useQuery} from '@apollo/client'
+import {gql, useLazyQuery} from '@apollo/client'
 import {faPlus} from '@fortawesome/free-solid-svg-icons'
 import {FontAwesomeIcon} from '@fortawesome/react-fontawesome'
 import {DateTime} from 'luxon'
+import ReactLoading from 'react-loading'
 import {NextPage} from 'next'
 import Error from 'next/error'
 import {useRouter} from 'next/router'
 import {Layout} from '../../components'
 import {GetSchedulesQuery, GetSchedulesQueryVariables, Schedule} from '../../graphql/generated'
 import styles from '../../styles/ScheduleListPage.module.sass'
+import {useEffect} from 'react'
 
 const GET_SCHEDULES = gql`
   query GetSchedules {
@@ -24,12 +26,15 @@ const GET_SCHEDULES = gql`
 `
 const ScheduleListPage: NextPage = () => {
   const router = useRouter()
+  const [getSchedules, {loading, error, data}] = useLazyQuery<GetSchedulesQuery & {me: any}, GetSchedulesQueryVariables>(GET_SCHEDULES)
 
-  const {loading, error, data} = useQuery<GetSchedulesQuery & {me: any}, GetSchedulesQueryVariables>(GET_SCHEDULES)
+  useEffect(() => {
+    getSchedules()
+  }, [getSchedules])
 
-  if (loading) return <></>
+  if (loading) return <LoadingPage />
   if (error) return <Error statusCode={500} title={error.message} />
-  if (!data) return <></>
+  if (!data) return <Layout></Layout>
 
   const {schedules} = data
 
@@ -90,5 +95,18 @@ function ScheduleCard({schedule}: ScheduleCardProps) {
       <h1 className="text-lg text-gray-700 font-medium">{title}</h1>
       <h4 className={`${styles.period} text-sm font-medium`}>{`${dateStart} - ${dateEnd}`}</h4>
     </div>
+  )
+}
+
+function LoadingPage() {
+  return (
+    <Layout>
+      <ReactLoading 
+        type="spin"
+        width={64}
+        height={64}
+        color="#8D8D8D"
+        className="absolute top-1/2 left-1/2"/>
+    </Layout>
   )
 }

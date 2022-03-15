@@ -13,6 +13,7 @@ import {
 } from '../../../components'
 import styles from '../../../styles/SchedulePage.module.sass'
 import useGlobal, {GlobalActionType, TableType, ViewType} from '../../../hooks/useGlobal'
+import ReactLoading from 'react-loading'
 import {NextPage} from 'next'
 import {gql, useLazyQuery, useMutation, useQuery} from '@apollo/client'
 import {
@@ -197,7 +198,7 @@ const SchedulePage: NextPage = () => {
     return <Layout></Layout>
   }
 
-  if (loading) return <Layout></Layout>
+  if (loading) return <LoadingPage />
 
   if (error) {
     return <Error statusCode={500} title={error.message} />
@@ -574,6 +575,19 @@ function WaitingPage() {
           </div>
         </div>
       </div>
+    </Layout>
+  )
+}
+
+function LoadingPage() {
+  return (
+    <Layout>
+      <ReactLoading 
+        type="spin"
+        width={64}
+        height={64}
+        color="#8D8D8D"
+        className="absolute top-1/2 left-1/2"/>
     </Layout>
   )
 }

@@ -3,6 +3,7 @@ import {useRouter} from 'next/router'
 import Error from 'next/error'
 import {useState} from 'react'
 import {Layout} from '../components'
+import ReactLoading from 'react-loading'
 import {GetMeQuery, GetMeQueryVariables} from '../graphql/generated'
 import styles from '../styles/LoginPage.module.sass'
 
@@ -31,7 +32,7 @@ function LoginPage() {
   const {loading: loadingMe, error: errorMe, data} = useQuery<GetMeQuery, GetMeQueryVariables>(GET_ME)
   const [login, {loading: loadingLogin, error: errorLogin}] = useMutation(LOGIN)
 
-  if (loadingMe || loadingLogin) return <></>
+  if (loadingMe || loadingLogin) return <LoadingPage />
   if (errorMe) return <Error statusCode={500} title={errorMe.message} />
   if (errorLogin) return <Error statusCode={500} title={errorLogin.message} />
 
@@ -47,7 +48,7 @@ function LoginPage() {
       onCompleted: (data) => {
         const {login: {token}} = data
         localStorage.setItem(process.env.NEXT_PUBLIC_TOKEN_KEY as string, token)
-        router.replace('/schedules')
+        router.push('/schedules')
       }
     })
   }
@@ -90,3 +91,16 @@ function LoginPage() {
 }
 
 export default LoginPage
+
+function LoadingPage() {
+  return (
+    <Layout>
+      <ReactLoading 
+        type="spin"
+        width={64}
+        height={64}
+        color="#8D8D8D"
+        className="absolute top-1/2 left-1/2"/>
+    </Layout>
+  )
+}

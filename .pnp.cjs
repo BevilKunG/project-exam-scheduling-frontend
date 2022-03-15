@@ -65,6 +65,7 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
             ["react-beautiful-dnd", "virtual:fb898ce7ef5bcfd217c7d7dca524304ef9b62398b791703ff5fa816f99be43318cb296ba2b6849088e316bb53ae5f832d84766f4377d8b1ced9afdc5b7be9040#npm:13.1.0"],
             ["react-dom", "virtual:fb898ce7ef5bcfd217c7d7dca524304ef9b62398b791703ff5fa816f99be43318cb296ba2b6849088e316bb53ae5f832d84766f4377d8b1ced9afdc5b7be9040#npm:17.0.2"],
             ["react-is", "npm:17.0.2"],
+            ["react-loading", "virtual:fb898ce7ef5bcfd217c7d7dca524304ef9b62398b791703ff5fa816f99be43318cb296ba2b6849088e316bb53ae5f832d84766f4377d8b1ced9afdc5b7be9040#npm:2.0.3"],
             ["react-query", "virtual:fb898ce7ef5bcfd217c7d7dca524304ef9b62398b791703ff5fa816f99be43318cb296ba2b6849088e316bb53ae5f832d84766f4377d8b1ced9afdc5b7be9040#npm:3.34.15"],
             ["sass", "npm:1.49.7"],
             ["styled-components", "virtual:fb898ce7ef5bcfd217c7d7dca524304ef9b62398b791703ff5fa816f99be43318cb296ba2b6849088e316bb53ae5f832d84766f4377d8b1ced9afdc5b7be9040#npm:5.3.3"],
@@ -9027,6 +9028,7 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
             ["react-beautiful-dnd", "virtual:fb898ce7ef5bcfd217c7d7dca524304ef9b62398b791703ff5fa816f99be43318cb296ba2b6849088e316bb53ae5f832d84766f4377d8b1ced9afdc5b7be9040#npm:13.1.0"],
             ["react-dom", "virtual:fb898ce7ef5bcfd217c7d7dca524304ef9b62398b791703ff5fa816f99be43318cb296ba2b6849088e316bb53ae5f832d84766f4377d8b1ced9afdc5b7be9040#npm:17.0.2"],
             ["react-is", "npm:17.0.2"],
+            ["react-loading", "virtual:fb898ce7ef5bcfd217c7d7dca524304ef9b62398b791703ff5fa816f99be43318cb296ba2b6849088e316bb53ae5f832d84766f4377d8b1ced9afdc5b7be9040#npm:2.0.3"],
             ["react-query", "virtual:fb898ce7ef5bcfd217c7d7dca524304ef9b62398b791703ff5fa816f99be43318cb296ba2b6849088e316bb53ae5f832d84766f4377d8b1ced9afdc5b7be9040#npm:3.34.15"],
             ["sass", "npm:1.49.7"],
             ["styled-components", "virtual:fb898ce7ef5bcfd217c7d7dca524304ef9b62398b791703ff5fa816f99be43318cb296ba2b6849088e316bb53ae5f832d84766f4377d8b1ced9afdc5b7be9040#npm:5.3.3"],
@@ -9300,6 +9302,32 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
           "packageLocation": "./.yarn/cache/react-is-npm-17.0.2-091bbb8db6-9d6d111d89.zip/node_modules/react-is/",
           "packageDependencies": [
             ["react-is", "npm:17.0.2"]
+          ],
+          "linkType": "HARD",
+        }]
+      ]],
+      ["react-loading", [
+        ["npm:2.0.3", {
+          "packageLocation": "./.yarn/cache/react-loading-npm-2.0.3-58f442fba0-a2b24b94c1.zip/node_modules/react-loading/",
+          "packageDependencies": [
+            ["react-loading", "npm:2.0.3"]
+          ],
+          "linkType": "SOFT",
+        }],
+        ["virtual:fb898ce7ef5bcfd217c7d7dca524304ef9b62398b791703ff5fa816f99be43318cb296ba2b6849088e316bb53ae5f832d84766f4377d8b1ced9afdc5b7be9040#npm:2.0.3", {
+          "packageLocation": "./.yarn/__virtual__/react-loading-virtual-3f98ccb599/0/cache/react-loading-npm-2.0.3-58f442fba0-a2b24b94c1.zip/node_modules/react-loading/",
+          "packageDependencies": [
+            ["react-loading", "virtual:fb898ce7ef5bcfd217c7d7dca524304ef9b62398b791703ff5fa816f99be43318cb296ba2b6849088e316bb53ae5f832d84766f4377d8b1ced9afdc5b7be9040#npm:2.0.3"],
+            ["@types/prop-types", null],
+            ["@types/react", "npm:17.0.36"],
+            ["prop-types", null],
+            ["react", "npm:17.0.2"]
+          ],
+          "packagePeers": [
+            "@types/prop-types",
+            "@types/react",
+            "prop-types",
+            "react"
           ],
           "linkType": "HARD",
         }]
