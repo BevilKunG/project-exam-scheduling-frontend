@@ -1,4 +1,4 @@
-schema: ${NODE_URI}/graphql
+schema: ${NEXT_PUBLIC_NODE_URI}/graphql
 documents: './src/**/*.tsx'
 generates:
   ./src/graphql/generated.ts:
